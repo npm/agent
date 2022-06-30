@@ -45,6 +45,9 @@ class Server extends EventEmitter {
 
   stop () {
     this.server.close()
+    for (const socket of this.sockets) {
+      socket.destroy()
+    }
     return once(this.server, 'close')
   }
 

@@ -64,7 +64,6 @@ t.test('single request', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    agent.destroy()
     return Promise.all([
       server.stop(),
       proxy.stop(),
@@ -85,7 +84,6 @@ t.test('can disable keep-alive', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    // no need to call agent.destroy() on this one, the connections are already closed
     return Promise.all([
       server.stop(),
       proxy.stop(),
@@ -106,7 +104,6 @@ t.test('can limit sockets', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    agent.destroy()
     return Promise.all([
       server.stop(),
       proxy.stop(),
@@ -159,7 +156,6 @@ t.test('can send auth to proxy', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    agent.destroy()
     return Promise.all([
       server.stop(),
       proxy.stop(),
@@ -180,7 +176,6 @@ t.test('can send auth to both proxy and server', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    agent.destroy()
     return Promise.all([
       server.stop(),
       proxy.stop(),
@@ -201,7 +196,6 @@ t.test('invalid proxy auth rejects', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    agent.destroy()
     return Promise.all([
       server.stop(),
       proxy.stop(),
@@ -218,7 +212,6 @@ t.test('rejects if proxy does not return 200', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    agent.destroy()
     return Promise.all([
       server.stop(),
       proxy.stop(),
@@ -236,7 +229,6 @@ t.test('rejects if proxy connection times out', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    agent.destroy()
     return Promise.all([
       server.stop(),
       proxy.stop(),
