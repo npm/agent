@@ -33,8 +33,8 @@ if (process.argv.length <= 2) {
 const [,, proxyType, serverType] = process.argv
 
 const agentGenerator = {
-  http: (options) => new HttpAgent({ ...options, rejectUnauthorized: false }),
-  https: (options) => new HttpsAgent({ ...options, rejectUnauthorized: false }),
+  http: (options) => new HttpAgent({ ...options, rejectUnauthorized: false, timeout: 100 }),
+  https: (options) => new HttpsAgent({ ...options, rejectUnauthorized: false, timeout: 100 }),
 }
 
 // returned when proxyType is 'null'
