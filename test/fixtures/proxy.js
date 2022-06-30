@@ -30,8 +30,6 @@ class Proxy extends EventEmitter {
         cert: readFileSync(join(__dirname, 'fake-cert.pem')),
       })
       : http.createServer({})
-    this.server.keepAlive = true
-    this.server.keepAliveTimeout = 10
     this.server.on('connect', (...args) => this[_onConnect](...args))
     this.server.on('connection', (socket) => this.sockets.push(socket))
     this.sockets = []
@@ -83,14 +81,7 @@ class Proxy extends EventEmitter {
 
     const proxy = net.connect(connectOptions, () => {
       socket.write(OK_MSG, () => {
-        // if either socket emits end, we need to disconnect our pipes or we could accidentally
-        // try to write to a socket that's no longer accepting writes
-        const onEnd = () => {
-          proxy.unpipe(socket)
-          socket.unpipe(proxy)
-        }
-        proxy.once('end', onEnd)
-        socket.once('end', onEnd)
+        proxy.on('end', () => proxy.destroy())
         socket.pipe(proxy)
         proxy.pipe(socket)
       })
