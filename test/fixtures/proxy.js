@@ -30,6 +30,8 @@ class Proxy extends EventEmitter {
         cert: readFileSync(join(__dirname, 'fake-cert.pem')),
       })
       : http.createServer({})
+    this.server.keepAlive = true
+    this.server.keepAliveTimeout = 10
     this.server.on('connect', (...args) => this[_onConnect](...args))
     this.server.on('connection', (socket) => this.sockets.push(socket))
     this.sockets = []
@@ -54,16 +56,13 @@ class Proxy extends EventEmitter {
     return once(this.server, 'close')
   }
 
-  [_onConnect] (req, socket, head) {
+  [_onConnect] (req, socket) {
     if (this.failConnect) {
       return socket.end(FAIL_MSG)
     }
 
     // if we want a timeout, just do nothing at all
     if (this.failTimeout) {
-      setTimeout(() => {
-        socket.end(FAIL_MSG)
-      }, 150)
       return
     }
 
@@ -80,11 +79,17 @@ class Proxy extends EventEmitter {
       host: url.hostname,
       port: url.port,
       rejectUnauthorized: false,
-      allowHalfOpen: true,
     }
 
     const proxy = net.connect(connectOptions, () => {
       socket.write(OK_MSG, () => {
+        // if the proxy socket emits end, it's because the server has disconnected us, so we
+        // need to disconnect our pipe since it's possible our internal socket will still be
+        // trying to write which will fail
+        proxy.once('end', () => {
+          proxy.unpipe(socket)
+          socket.unpipe(proxy)
+        })
         socket.pipe(proxy)
         proxy.pipe(socket)
       })

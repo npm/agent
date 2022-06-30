@@ -33,8 +33,8 @@ if (process.argv.length <= 2) {
 const [,, proxyType, serverType] = process.argv
 
 const agentGenerator = {
-  http: (options) => new HttpAgent({ ...options, rejectUnauthorized: false, timeout: 100 }),
-  https: (options) => new HttpsAgent({ ...options, rejectUnauthorized: false, timeout: 100 }),
+  http: (options) => new HttpAgent({ ...options, rejectUnauthorized: false }),
+  https: (options) => new HttpsAgent({ ...options, rejectUnauthorized: false }),
 }
 
 // returned when proxyType is 'null'
@@ -64,10 +64,12 @@ t.test('single request', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
+    // return Promise.all([
+    //   server.stop(),
+    //   proxy.stop(),
+    // ])
   })
 
   const res = await client.get('/')
@@ -84,10 +86,8 @@ t.test('can disable keep-alive', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
   })
 
   const res = await client.get('/')
@@ -104,10 +104,8 @@ t.test('can limit sockets', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
   })
 
   if (!proxy.fake) {
@@ -156,10 +154,8 @@ t.test('can send auth to proxy', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
   })
 
   const res = await client.get('/')
@@ -176,10 +172,8 @@ t.test('can send auth to both proxy and server', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
   })
 
   const res = await client.get('/')
@@ -196,10 +190,8 @@ t.test('invalid proxy auth rejects', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
   })
 
   await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
@@ -212,10 +204,8 @@ t.test('rejects if proxy does not return 200', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
   })
 
   await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
@@ -229,10 +219,8 @@ t.test('rejects if proxy connection times out', async (t) => {
   const client = new Client(agent, server.address)
 
   t.teardown(() => {
-    return Promise.all([
-      server.stop(),
-      proxy.stop(),
-    ])
+    server.stop()
+    proxy.stop()
   })
 
   await t.rejects(client.get('/'), { code: 'ETIMEDOUT' })

@@ -24,6 +24,8 @@ class Server extends EventEmitter {
         cert: readFileSync(join(__dirname, 'fake-cert.pem')),
       })
       : http.createServer({})
+    this.server.keepAlive = true
+    this.server.keepAliveTimeout = 10
     this.server.on('request', (req, res) => this[_onRequest](req, res))
     this.server.on('connection', (socket) => this.sockets.push(socket))
     this.sockets = []
