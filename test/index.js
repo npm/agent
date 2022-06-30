@@ -63,13 +63,9 @@ t.test('single request', async (t) => {
   const agent = agentGenerator[serverType]({ proxy: proxy.address })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
-    // return Promise.all([
-    //   server.stop(),
-    //   proxy.stop(),
-    // ])
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   const res = await client.get('/')
@@ -85,9 +81,9 @@ t.test('can disable keep-alive', async (t) => {
   const agent = agentGenerator[serverType]({ proxy: proxy.address, keepAlive: false })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   const res = await client.get('/')
@@ -103,9 +99,9 @@ t.test('can limit sockets', async (t) => {
   const agent = agentGenerator[serverType]({ proxy: proxy.address, maxSockets: 1 })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   if (!proxy.fake) {
@@ -153,9 +149,9 @@ t.test('can send auth to proxy', async (t) => {
   const agent = agentGenerator[serverType]({ proxy: proxy.address })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   const res = await client.get('/')
@@ -171,9 +167,9 @@ t.test('can send auth to both proxy and server', async (t) => {
   const agent = agentGenerator[serverType]({ proxy: proxy.address })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   const res = await client.get('/')
@@ -189,9 +185,9 @@ t.test('invalid proxy auth rejects', async (t) => {
   const agent = agentGenerator[serverType]({ proxy: proxy.address.replace('@', 'broken@') })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
@@ -203,24 +199,23 @@ t.test('rejects if proxy does not return 200', async (t) => {
   const agent = agentGenerator[serverType]({ proxy: proxy.address })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
 })
 
 t.test('rejects if proxy connection times out', async (t) => {
-  // proxy will send a 500 after 150ms, set our timeout to less than that
   const proxy = await proxyGenerator[proxyType]({ failTimeout: true }).start()
   const server = await serverGenerator[serverType]().start()
   const agent = agentGenerator[serverType]({ proxy: proxy.address, timeout: 100 })
   const client = new Client(agent, server.address)
 
-  t.teardown(() => {
-    server.stop()
-    proxy.stop()
+  t.teardown(async () => {
+    await server.stop()
+    await proxy.stop()
   })
 
   await t.rejects(client.get('/'), { code: 'ETIMEDOUT' })

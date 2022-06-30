@@ -50,8 +50,7 @@ class Proxy extends EventEmitter {
   }
 
   stop () {
-    this.server.close()
-    return once(this.server, 'close')
+    return this.server.close()
   }
 
   [_onConnect] (req, socket) {

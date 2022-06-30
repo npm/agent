@@ -45,9 +45,10 @@ class Server extends EventEmitter {
     return this
   }
 
-  stop () {
+  async stop () {
+    const p = once(this.server, 'close')
     this.server.close()
-    return once(this.server, 'close')
+    return await p
   }
 
   [_onRequest] (req, res) {
