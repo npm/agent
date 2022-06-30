@@ -83,13 +83,14 @@ class Proxy extends EventEmitter {
 
     const proxy = net.connect(connectOptions, () => {
       socket.write(OK_MSG, () => {
-        // if the proxy socket emits end, it's because the server has disconnected us, so we
-        // need to disconnect our pipe since it's possible our internal socket will still be
-        // trying to write which will fail
-        proxy.once('end', () => {
+        // if either socket emits end, we need to disconnect our pipes or we could accidentally
+        // try to write to a socket that's no longer accepting writes
+        const onEnd = () => {
           proxy.unpipe(socket)
           socket.unpipe(proxy)
-        })
+        }
+        proxy.once('end', onEnd)
+        socket.once('end', onEnd)
         socket.pipe(proxy)
         proxy.pipe(socket)
       })
