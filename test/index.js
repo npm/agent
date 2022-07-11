@@ -131,23 +131,10 @@ t.test('can limit sockets', async (t) => {
     t.equal(res.req.agent, agent)
   }
 
-  // if we're using a real proxy
   if (!proxy.fake) {
-    // if that proxy is secure, expect 2 sockets (one raw, one tls)
-    // otherwise, just a single one
-    if (proxyType === 'https') {
-      t.equal(proxy.sockets.size, 2, 'only made 2 connections to proxy')
-    } else {
-      t.equal(proxy.sockets.size, 1, 'only made 1 connection to proxy')
-    }
+    t.equal(proxy.sockets.size, 1, 'only made 1 connection to proxy')
   }
-
-  // if the serverType is https, we also expect 2 sockets there
-  if (serverType === 'https') {
-    t.equal(server.sockets.size, 2, 'only made 2 connections to server')
-  } else {
-    t.equal(server.sockets.size, 1, 'only made 1 connection to server')
-  }
+  t.equal(server.sockets.size, 1, 'only made 1 connection to server')
 })
 
 // all tests after this point are for specific behaviors found in a proxy, so if this run is not

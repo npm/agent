@@ -25,8 +25,11 @@ class Server extends EventEmitter {
         cert: readFileSync(join(__dirname, 'fake-cert.pem')),
       })
       : http.createServer({})
-    this.server.on('connection', (socket) => this[_onConnection](socket))
-    this.server.on('secureConnection', (socket) => this[_onConnection](socket))
+    if (this.tls) {
+      this.server.on('secureConnection', (socket) => this[_onConnection](socket))
+    } else {
+      this.server.on('connection', (socket) => this[_onConnection](socket))
+    }
     this.server.on('request', (req, res) => this[_onRequest](req, res))
     this.sockets = new Set()
   }

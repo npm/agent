@@ -33,8 +33,11 @@ class Proxy extends EventEmitter {
       })
       : http.createServer({})
     this.server.on('connect', (...args) => this[_onConnect](...args))
-    this.server.on('connection', (socket) => this[_onConnection](socket))
-    this.server.on('secureConnection', (socket) => this[_onConnection](socket))
+    if (this.tls) {
+      this.server.on('secureConnection', (socket) => this[_onConnection](socket))
+    } else {
+      this.server.on('connection', (socket) => this[_onConnection](socket))
+    }
     this.sockets = new Set()
   }
 
