@@ -11,7 +11,9 @@ const net = require('net')
 const OK_MSG = Buffer.from('HTTP/1.1 200 Connection Established\r\n\r\n')
 const FAIL_MSG = Buffer.from('HTTP/1.1 500 Internal Server Error\r\n\r\n')
 const NO_AUTH_MSG = Buffer.from('HTTP/1.1 401 Unauthorized\r\n\r\n')
-const _onConnect = Symbol('proxy._onConnect')
+
+const _onConnect = Symbol('Proxy._onConnect')
+const _onConnection = Symbol('Proxy._onConnection')
 
 class Proxy extends EventEmitter {
   constructor ({ auth, tls, failConnect, failTimeout } = {}) {
@@ -31,8 +33,9 @@ class Proxy extends EventEmitter {
       })
       : http.createServer({})
     this.server.on('connect', (...args) => this[_onConnect](...args))
-    this.server.on('connection', (socket) => this.sockets.push(socket))
-    this.sockets = []
+    this.server.on('connection', (socket) => this[_onConnection](socket))
+    this.server.on('secureConnection', (socket) => this[_onConnection](socket))
+    this.sockets = new Set()
   }
 
   async start () {
@@ -50,7 +53,10 @@ class Proxy extends EventEmitter {
   }
 
   stop () {
-    return this.server.close()
+    this.server.close()
+    for (const socket of this.sockets) {
+      socket.destroy()
+    }
   }
 
   [_onConnect] (req, socket) {
@@ -84,6 +90,13 @@ class Proxy extends EventEmitter {
         socket.pipe(proxy)
         proxy.pipe(socket)
       })
+    })
+  }
+
+  [_onConnection] (socket) {
+    this.sockets.add(socket)
+    socket.once('close', () => {
+      this.sockets.delete(socket)
     })
   }
 }

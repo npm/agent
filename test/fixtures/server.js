@@ -7,6 +7,7 @@ const { join } = require('path')
 const http = require('http')
 const https = require('https')
 
+const _onConnection = Symbol('Server._onConnection')
 const _onRequest = Symbol('Server._onRequest')
 
 class Server extends EventEmitter {
@@ -24,11 +25,10 @@ class Server extends EventEmitter {
         cert: readFileSync(join(__dirname, 'fake-cert.pem')),
       })
       : http.createServer({})
-    this.server.keepAlive = true
-    this.server.keepAliveTimeout = 10
+    this.server.on('connection', (socket) => this[_onConnection](socket))
+    this.server.on('secureConnection', (socket) => this[_onConnection](socket))
     this.server.on('request', (req, res) => this[_onRequest](req, res))
-    this.server.on('connection', (socket) => this.sockets.push(socket))
-    this.sockets = []
+    this.sockets = new Set()
   }
 
   async start () {
@@ -45,10 +45,18 @@ class Server extends EventEmitter {
     return this
   }
 
-  async stop () {
-    const p = once(this.server, 'close')
+  stop () {
     this.server.close()
-    return await p
+    for (const socket of this.sockets) {
+      socket.destroy()
+    }
+  }
+
+  [_onConnection] (socket) {
+    this.sockets.add(socket)
+    socket.once('close', () => {
+      this.sockets.delete(socket)
+    })
   }
 
   [_onRequest] (req, res) {
