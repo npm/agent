@@ -89,7 +89,6 @@ class Proxy extends EventEmitter {
 
     const proxy = net.connect(connectOptions, () => {
       socket.write(OK_MSG, () => {
-        proxy.on('end', () => proxy.destroy())
         socket.pipe(proxy)
         proxy.pipe(socket)
       })
