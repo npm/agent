@@ -48,11 +48,20 @@ class Server extends EventEmitter {
     return this
   }
 
-  stop () {
+  async stop () {
     this.server.close()
     for (const socket of this.sockets) {
       socket.destroy()
     }
+
+    const check = async () => {
+      if (this.sockets.size) {
+        await new Promise((resolve) => setImmediate(resolve))
+        return check()
+      }
+    }
+
+    return check()
   }
 
   [_onConnection] (socket) {
