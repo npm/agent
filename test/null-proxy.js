@@ -143,6 +143,20 @@ t.test('http destination', (t) => {
     await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
   })
 
+  t.test('response timeout rejects', async (t) => {
+    const server = new Server({ failIdle: true })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const agent = new HttpAgent({ timeouts: { response: 100 } })
+    const client = new Client(agent, server.address)
+
+    await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
+  })
+
   t.end()
 })
 
@@ -280,6 +294,20 @@ t.test('https destination', (t) => {
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
+  })
+
+  t.test('response timeout rejects', async (t) => {
+    const server = new Server({ tls: true, failIdle: true })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const agent = new HttpsAgent({ timeouts: { response: 100 } })
+    const client = new Client(agent, server.address)
+
+    await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
   })
 
   t.end()
