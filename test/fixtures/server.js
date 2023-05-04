@@ -72,6 +72,15 @@ class Server extends EventEmitter {
   }
 
   [_onRequest] (req, res) {
+    if (this.auth) {
+      const _auth = req.headers.authorization.slice('Basic '.length)
+      const [username, password] = Buffer.from(_auth, 'base64').toString().split(':')
+      if (username !== this.username || password !== this.password) {
+        res.writeHead(401)
+        return res.end()
+      }
+    }
+
     res.writeHead(200)
     res.end('OK!')
   }

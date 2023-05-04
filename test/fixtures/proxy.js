@@ -16,10 +16,9 @@ const _onConnect = Symbol('Proxy._onConnect')
 const _onConnection = Symbol('Proxy._onConnection')
 
 class Proxy extends EventEmitter {
-  constructor ({ auth, tls, failConnect, failTimeout } = {}) {
+  constructor ({ auth, tls, failConnect } = {}) {
     super()
     this.failConnect = !!failConnect
-    this.failTimeout = !!failTimeout
     this.auth = !!auth
     if (this.auth) {
       this.username = randomBytes(8).toString('hex')
@@ -76,12 +75,7 @@ class Proxy extends EventEmitter {
       return socket.end(FAIL_MSG)
     }
 
-    // if we want a timeout, just do nothing at all
-    if (this.failTimeout) {
-      return
-    }
-
-    if (this.username && this.password) {
+    if (this.auth) {
       const auth = req.headers['proxy-authentication']
       const [username, password] = Buffer.from(auth, 'base64').toString().split(':')
       if (username !== this.username || password !== this.password) {
