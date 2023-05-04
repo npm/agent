@@ -216,22 +216,36 @@ t.test('http destination', (t) => {
     }
 
     const MockedAgent = t.mock('../lib/http.js', {
-      '../lib/proxy/index.js': t.mock('../lib/proxy/index.js', {
-        '../lib/proxy/http.js': t.mock('../lib/proxy/http.js', {
-          http: {
-            ...http,
-            request: (...opts) => {
-              console.error('called mocked http.request')
-            },
-          },
-        }),
-      }),
+      http: {
+        ...http,
+        request: (...opts) => {
+          return new MockRequest(...opts)
+        },
+      },
     })
 
-    const agent = new MockedAgent({ timeouts: { connection: 100 } })
+    const agent = new MockedAgent({ timeouts: { connection: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ECONNECTIONTIMEOUT' })
+  })
+
+  t.test('idle timeout rejects', async (t) => {
+    const server = new Server({ failIdle: true })
+    await server.start()
+
+    const proxy = new Proxy()
+    await proxy.start()
+
+    t.teardown(async () => {
+      await server.stop()
+      await proxy.stop()
+    })
+
+    const agent = new HttpAgent({ timeouts: { idle: 100 }, proxy: proxy.address })
+    const client = new Client(agent, server.address)
+
+    await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
   })
 
   t.end()

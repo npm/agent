@@ -11,8 +11,9 @@ const _onConnection = Symbol('Server._onConnection')
 const _onRequest = Symbol('Server._onRequest')
 
 class Server extends EventEmitter {
-  constructor ({ auth, tls } = {}) {
+  constructor ({ auth, tls, failIdle } = {}) {
     super()
+    this.failIdle = !!failIdle
     this.auth = !!auth
     if (this.auth) {
       this.username = randomBytes(8).toString('hex')
@@ -81,8 +82,11 @@ class Server extends EventEmitter {
       }
     }
 
-    res.writeHead(200)
-    res.end('OK!')
+    // to fail with an idle timeout, just don't send anything
+    if (!this.failIdle) {
+      res.writeHead(200)
+      res.end('OK!')
+    }
   }
 }
 
