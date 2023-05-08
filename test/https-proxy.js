@@ -15,7 +15,7 @@ t.test('http destination', (t) => {
     const server = new Server()
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -23,7 +23,7 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ proxy: proxy.address })
+    const agent = new HttpAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -37,7 +37,7 @@ t.test('http destination', (t) => {
     const server = new Server()
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -45,7 +45,11 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ keepAlive: false, proxy: proxy.address })
+    const agent = new HttpAgent({
+      keepAlive: false,
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -59,7 +63,7 @@ t.test('http destination', (t) => {
     const server = new Server()
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -67,7 +71,7 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ maxSockets: 1, proxy: proxy.address })
+    const agent = new HttpAgent({ maxSockets: 1, proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     // sockets are created asynchronously, so we have to send a single request first
@@ -99,7 +103,7 @@ t.test('http destination', (t) => {
     const server = new Server({ auth: true })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -107,7 +111,7 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ proxy: proxy.address })
+    const agent = new HttpAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const badServer = server.address.replace('@', 'broken@')
     const client = new Client(agent, badServer)
 
@@ -121,7 +125,7 @@ t.test('http destination', (t) => {
     const server = new Server()
     await server.start()
 
-    const proxy = new Proxy({ auth: true })
+    const proxy = new Proxy({ tls: true, auth: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -131,7 +135,7 @@ t.test('http destination', (t) => {
 
     // proxy.address has credentials in it, intentionally break them
     const badProxy = proxy.address.replace('@', 'broken@')
-    const agent = new HttpAgent({ proxy: badProxy })
+    const agent = new HttpAgent({ proxy: badProxy, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
@@ -141,7 +145,7 @@ t.test('http destination', (t) => {
     const server = new Server()
     await server.start()
 
-    const proxy = new Proxy({ auth: true })
+    const proxy = new Proxy({ tls: true, auth: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -149,7 +153,7 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ proxy: proxy.address })
+    const agent = new HttpAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -163,7 +167,7 @@ t.test('http destination', (t) => {
     const server = new Server({ auth: true })
     await server.start()
 
-    const proxy = new Proxy({ auth: true })
+    const proxy = new Proxy({ tls: true, auth: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -171,7 +175,7 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ proxy: proxy.address })
+    const agent = new HttpAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -185,7 +189,7 @@ t.test('http destination', (t) => {
     const server = new Server()
     await server.start()
 
-    const proxy = new Proxy({ failConnect: true })
+    const proxy = new Proxy({ tls: true, failConnect: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -193,7 +197,7 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ proxy: proxy.address })
+    const agent = new HttpAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
@@ -203,7 +207,7 @@ t.test('http destination', (t) => {
     const server = new Server()
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -225,7 +229,11 @@ t.test('http destination', (t) => {
       },
     })
 
-    const agent = new MockedAgent({ timeouts: { connection: 100 }, proxy: proxy.address })
+    const agent = new MockedAgent({
+      timeouts: { connection: 100 },
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ECONNECTIONTIMEOUT' })
@@ -235,7 +243,7 @@ t.test('http destination', (t) => {
     const server = new Server({ idleDelay: 150 })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -243,7 +251,11 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ timeouts: { idle: 100 }, proxy: proxy.address })
+    const agent = new HttpAgent({
+      timeouts: { idle: 100 },
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
@@ -253,7 +265,7 @@ t.test('http destination', (t) => {
     const server = new Server({ responseDelay: 150 })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -261,7 +273,11 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ timeouts: { response: 100 }, proxy: proxy.address })
+    const agent = new HttpAgent({
+      timeouts: { response: 100 },
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
@@ -271,7 +287,7 @@ t.test('http destination', (t) => {
     const server = new Server({ transferDelay: 150 })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -279,7 +295,11 @@ t.test('http destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpAgent({ timeouts: { transfer: 100 }, proxy: proxy.address })
+    const agent = new HttpAgent({
+      timeouts: { transfer: 100 },
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })
@@ -295,7 +315,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -303,7 +323,7 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ proxy: proxy.address })
+    const agent = new HttpsAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -317,7 +337,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -325,7 +345,11 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ keepAlive: false, proxy: proxy.address })
+    const agent = new HttpsAgent({
+      keepAlive: false,
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -339,7 +363,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -347,7 +371,7 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ maxSockets: 1, proxy: proxy.address })
+    const agent = new HttpsAgent({ maxSockets: 1, proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     // sockets are created asynchronously, so we have to send a single request first
@@ -379,7 +403,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true, auth: true })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -387,7 +411,7 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ proxy: proxy.address })
+    const agent = new HttpsAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const badServer = server.address.replace('@', 'broken@')
     const client = new Client(agent, badServer)
 
@@ -401,7 +425,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true })
     await server.start()
 
-    const proxy = new Proxy({ auth: true })
+    const proxy = new Proxy({ tls: true, auth: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -411,7 +435,7 @@ t.test('https destination', (t) => {
 
     // proxy.address has credentials in it, intentionally break them
     const badProxy = proxy.address.replace('@', 'broken@')
-    const agent = new HttpsAgent({ proxy: badProxy })
+    const agent = new HttpsAgent({ proxy: badProxy, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
@@ -421,7 +445,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true })
     await server.start()
 
-    const proxy = new Proxy({ auth: true })
+    const proxy = new Proxy({ tls: true, auth: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -429,7 +453,7 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ proxy: proxy.address })
+    const agent = new HttpsAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -443,7 +467,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true, auth: true })
     await server.start()
 
-    const proxy = new Proxy({ auth: true })
+    const proxy = new Proxy({ tls: true, auth: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -451,7 +475,7 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ proxy: proxy.address })
+    const agent = new HttpsAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
@@ -465,7 +489,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true })
     await server.start()
 
-    const proxy = new Proxy({ failConnect: true })
+    const proxy = new Proxy({ tls: true, failConnect: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -473,7 +497,7 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ proxy: proxy.address })
+    const agent = new HttpsAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
@@ -483,7 +507,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -515,7 +539,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true, idleDelay: 150 })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -523,7 +547,11 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ timeouts: { idle: 100 }, proxy: proxy.address })
+    const agent = new HttpsAgent({
+      timeouts: { idle: 100 },
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
@@ -533,7 +561,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true, responseDelay: 150 })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -541,15 +569,11 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const workingAgent = new HttpsAgent({
-      timeouts: { response: 200 },
+    const agent = new HttpsAgent({
+      timeouts: { response: 100 },
       proxy: proxy.address,
+      rejectUnauthorized: false,
     })
-    const workingClient = new Client(workingAgent, server.address)
-    const res = await workingClient.get('/')
-    t.equal(res.statusCode, 200)
-
-    const agent = new HttpsAgent({ timeouts: { response: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
@@ -559,7 +583,7 @@ t.test('https destination', (t) => {
     const server = new Server({ tls: true, transferDelay: 150 })
     await server.start()
 
-    const proxy = new Proxy()
+    const proxy = new Proxy({ tls: true })
     await proxy.start()
 
     t.teardown(async () => {
@@ -567,7 +591,11 @@ t.test('https destination', (t) => {
       await proxy.stop()
     })
 
-    const agent = new HttpsAgent({ timeouts: { transfer: 100 }, proxy: proxy.address })
+    const agent = new HttpsAgent({
+      timeouts: { transfer: 100 },
+      proxy: proxy.address,
+      rejectUnauthorized: false,
+    })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })

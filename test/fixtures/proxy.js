@@ -7,6 +7,7 @@ const { readFileSync } = require('fs')
 const http = require('http')
 const https = require('https')
 const net = require('net')
+const tls = require('tls')
 
 const OK_MSG = Buffer.from('HTTP/1.1 200 Connection Established\r\n\r\n')
 const FAIL_MSG = Buffer.from('HTTP/1.1 500 Internal Server Error\r\n\r\n')
@@ -16,7 +17,7 @@ const _onConnect = Symbol('Proxy._onConnect')
 const _onConnection = Symbol('Proxy._onConnection')
 
 class Proxy extends EventEmitter {
-  constructor ({ auth, tls, failConnect } = {}) {
+  constructor ({ auth, tls: _tls, failConnect } = {}) {
     super()
     this.failConnect = !!failConnect
     this.auth = !!auth
@@ -24,7 +25,7 @@ class Proxy extends EventEmitter {
       this.username = randomBytes(8).toString('hex')
       this.password = randomBytes(8).toString('hex')
     }
-    this.tls = !!tls
+    this.tls = !!_tls
     this.server = this.tls
       ? https.createServer({
         key: readFileSync(join(__dirname, 'fake-key.pem')),
@@ -90,12 +91,23 @@ class Proxy extends EventEmitter {
       rejectUnauthorized: false,
     }
 
-    const proxy = net.connect(connectOptions, () => {
+    const onConnect = () => {
       socket.write(OK_MSG, () => {
         socket.pipe(proxy)
         proxy.pipe(socket)
+        socket.once('error', () => {
+          proxy.end()
+        })
+
+        proxy.once('error', () => {
+          socket.end()
+        })
       })
-    })
+    }
+
+    const proxy = url.protocol === 'https:'
+      ? tls.connect(connectOptions, onConnect)
+      : net.connect(connectOptions, onConnect)
   }
 
   [_onConnection] (socket) {

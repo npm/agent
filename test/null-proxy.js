@@ -114,12 +114,13 @@ t.test('http destination', (t) => {
       // function a no-op we prevent the connection _and_ the error
       _writeGeneric () {}
     }
+    const mockSocket = new MockSocket()
 
     const MockedAgent = t.mock('../lib/http.js', {
       net: {
         ...net,
         connect: (...args) => {
-          return new MockSocket(...args)
+          return mockSocket
         },
       },
     })
@@ -127,10 +128,16 @@ t.test('http destination', (t) => {
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ECONNECTIONTIMEOUT' })
+
+    // this ensures that an error event on the socket before the
+    // connect event occurs gets raised
+    const secondFetch = client.get('/')
+    mockSocket.emit('error', { code: 'KABOOM' })
+    await t.rejects(secondFetch, { code: 'KABOOM' })
   })
 
   t.test('idle timeout rejects', async (t) => {
-    const server = new Server({ failIdle: true })
+    const server = new Server({ idleDelay: 150 })
     await server.start()
 
     t.teardown(async () => {
@@ -144,17 +151,41 @@ t.test('http destination', (t) => {
   })
 
   t.test('response timeout rejects', async (t) => {
-    const server = new Server({ failIdle: true })
+    const server = new Server({ responseDelay: 150 })
     await server.start()
 
     t.teardown(async () => {
       await server.stop()
     })
 
+    const workingAgent = new HttpAgent({ timeouts: { response: 200 } })
+    const workingClient = new Client(workingAgent, server.address)
+    const res = await workingClient.get('/')
+    t.equal(res.statusCode, 200)
+
     const agent = new HttpAgent({ timeouts: { response: 100 } })
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
+  })
+
+  t.test('transfer timeout rejects', async (t) => {
+    const server = new Server({ transferDelay: 150 })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const workingAgent = new HttpAgent({ timeouts: { transfer: 300 } })
+    const workingClient = new Client(workingAgent, server.address)
+    const res = await workingClient.get('/')
+    t.equal(res.statusCode, 200)
+
+    const agent = new HttpAgent({ timeouts: { transfer: 100 } })
+    const client = new Client(agent, server.address)
+
+    await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })
   })
 
   t.end()
@@ -283,7 +314,7 @@ t.test('https destination', (t) => {
   })
 
   t.test('idle timeout rejects', async (t) => {
-    const server = new Server({ tls: true, failIdle: true })
+    const server = new Server({ tls: true, idleDelay: 150 })
     await server.start()
 
     t.teardown(async () => {
@@ -297,7 +328,7 @@ t.test('https destination', (t) => {
   })
 
   t.test('response timeout rejects', async (t) => {
-    const server = new Server({ tls: true, failIdle: true })
+    const server = new Server({ tls: true, responseDelay: 150 })
     await server.start()
 
     t.teardown(async () => {
@@ -308,6 +339,20 @@ t.test('https destination', (t) => {
     const client = new Client(agent, server.address)
 
     await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
+  })
+
+  t.test('transfer timeout rejects', async (t) => {
+    const server = new Server({ tls: true, transferDelay: 150 })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const agent = new HttpsAgent({ timeouts: { transfer: 100 } })
+    const client = new Client(agent, server.address)
+
+    await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })
   })
 
   t.end()
