@@ -4,6 +4,7 @@
   "description": "the http/https agent used by the npm cli",
   "main": "lib/index.js",
   "scripts": {
+    "gencerts": "bash scripts/create-cert.sh",
     "test": "tap",
     "lint": "eslint \"**/*.js\"",
     "postlint": "template-oss-check",
