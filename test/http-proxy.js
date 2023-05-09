@@ -27,10 +27,9 @@ t.test('http destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'keep-alive', 'keep-alive by default')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('can disable keep-alive', async (t) => {
@@ -49,10 +48,9 @@ t.test('http destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'close', 'keep-alive disabled')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'close', 'keep-alive disabled')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('can limit sockets', async (t) => {
@@ -72,10 +70,9 @@ t.test('http destination', (t) => {
 
     // sockets are created asynchronously, so we have to send a single request first
     const initialRes = await client.get('/')
-    t.equal(initialRes.statusCode, 200)
-    t.equal(initialRes.headers.connection, 'keep-alive')
-    t.equal(initialRes.body, 'OK!')
-    t.equal(initialRes.req.agent, agent)
+    t.equal(initialRes.status, 200)
+    t.equal(initialRes.headers.get('connection'), 'keep-alive')
+    t.equal(initialRes.result, 'OK!')
 
     const results = await Promise.all([
       client.get('/'),
@@ -85,10 +82,9 @@ t.test('http destination', (t) => {
     ])
 
     for (const res of results) {
-      t.equal(res.statusCode, 200)
-      t.equal(res.headers.connection, 'keep-alive')
-      t.equal(res.body, 'OK!')
-      t.equal(res.req.agent, agent)
+      t.equal(res.status, 200)
+      t.equal(res.headers.get('connection'), 'keep-alive')
+      t.equal(res.result, 'OK!')
     }
 
     t.equal(proxy.sockets.size, 1, 'only made 1 connection to the proxy')
@@ -113,8 +109,7 @@ t.test('http destination', (t) => {
 
     // NOTE this does not cause the promise to reject, only to receive a 401 response
     const res = await client.get('/')
-    t.equal(res.statusCode, 401)
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 401)
   })
 
   t.test('invalid proxy auth rejects', async (t) => {
@@ -153,10 +148,9 @@ t.test('http destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'keep-alive', 'keep-alive by default')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('can send auth to both proxy and server', async (t) => {
@@ -175,10 +169,9 @@ t.test('http destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'keep-alive', 'keep-alive by default')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('non-200 response from proxy rejects', async (t) => {
@@ -307,10 +300,9 @@ t.test('https destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'keep-alive', 'keep-alive by default')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('can disable keep-alive', async (t) => {
@@ -329,10 +321,9 @@ t.test('https destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'close', 'keep-alive disabled')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'close', 'keep-alive disabled')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('can limit sockets', async (t) => {
@@ -352,10 +343,9 @@ t.test('https destination', (t) => {
 
     // sockets are created asynchronously, so we have to send a single request first
     const initialRes = await client.get('/')
-    t.equal(initialRes.statusCode, 200)
-    t.equal(initialRes.headers.connection, 'keep-alive')
-    t.equal(initialRes.body, 'OK!')
-    t.equal(initialRes.req.agent, agent)
+    t.equal(initialRes.status, 200)
+    t.equal(initialRes.headers.get('connection'), 'keep-alive')
+    t.equal(initialRes.result, 'OK!')
 
     const results = await Promise.all([
       client.get('/'),
@@ -365,10 +355,9 @@ t.test('https destination', (t) => {
     ])
 
     for (const res of results) {
-      t.equal(res.statusCode, 200)
-      t.equal(res.headers.connection, 'keep-alive')
-      t.equal(res.body, 'OK!')
-      t.equal(res.req.agent, agent)
+      t.equal(res.status, 200)
+      t.equal(res.headers.get('connection'), 'keep-alive')
+      t.equal(res.result, 'OK!')
     }
 
     t.equal(proxy.sockets.size, 1, 'only made 1 connection to the proxy')
@@ -393,8 +382,7 @@ t.test('https destination', (t) => {
 
     // NOTE this does not cause the promise to reject, only to receive a 401 response
     const res = await client.get('/')
-    t.equal(res.statusCode, 401)
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 401)
   })
 
   t.test('invalid proxy auth rejects', async (t) => {
@@ -433,10 +421,9 @@ t.test('https destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'keep-alive', 'keep-alive by default')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('can send auth to both proxy and server', async (t) => {
@@ -455,10 +442,9 @@ t.test('https destination', (t) => {
     const client = new Client(agent, server.address)
 
     const res = await client.get('/')
-    t.equal(res.statusCode, 200)
-    t.equal(res.headers.connection, 'keep-alive', 'keep-alive by default')
-    t.equal(res.body, 'OK!')
-    t.equal(res.req.agent, agent)
+    t.equal(res.status, 200)
+    t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
+    t.equal(res.result, 'OK!')
   })
 
   t.test('non-200 response from proxy rejects', async (t) => {
@@ -547,7 +533,7 @@ t.test('https destination', (t) => {
     })
     const workingClient = new Client(workingAgent, server.address)
     const res = await workingClient.get('/')
-    t.equal(res.statusCode, 200)
+    t.equal(res.status, 200)
 
     const agent = new HttpsAgent({ timeouts: { response: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
