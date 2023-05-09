@@ -27,6 +27,46 @@ t.test('http destination', (t) => {
     t.equal(res.result, 'OK!')
   })
 
+  t.test('single request ipv4 only', async (t) => {
+    const server = new Server({ family: 4 })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const agent = new HttpAgent({ family: 4 })
+    const client = new Client(agent, server.address)
+
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
+
+    const mismatchAgent = new HttpAgent({ family: 6 })
+    const mismatchClient = new Client(mismatchAgent, server.address)
+    await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
+  })
+
+  t.test('single request ipv6 only', async (t) => {
+    const server = new Server({ family: 6 })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const agent = new HttpAgent({ family: 6 })
+    const client = new Client(agent, server.address)
+
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
+
+    const mismatchAgent = new HttpAgent({ family: 4 })
+    const mismatchClient = new Client(mismatchAgent, server.address)
+    await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
+  })
+
   t.test('can disable keep-alive', async (t) => {
     const server = new Server()
     await server.start()
@@ -204,6 +244,46 @@ t.test('https destination', (t) => {
     t.equal(res.status, 200)
     t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
     t.equal(res.result, 'OK!')
+  })
+
+  t.test('single request ipv4 only', async (t) => {
+    const server = new Server({ tls: true, family: 4 })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const agent = new HttpsAgent({ family: 4 })
+    const client = new Client(agent, server.address)
+
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
+
+    const mismatchAgent = new HttpsAgent({ family: 6 })
+    const mismatchClient = new Client(mismatchAgent, server.address)
+    await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
+  })
+
+  t.test('single request ipv6 only', async (t) => {
+    const server = new Server({ tls: true, family: 6 })
+    await server.start()
+
+    t.teardown(async () => {
+      await server.stop()
+    })
+
+    const agent = new HttpsAgent({ family: 6 })
+    const client = new Client(agent, server.address)
+
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
+
+    const mismatchAgent = new HttpsAgent({ family: 4 })
+    const mismatchClient = new Client(mismatchAgent, server.address)
+    await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
   })
 
   t.test('can disable keep-alive', async (t) => {
