@@ -11,8 +11,9 @@ const _onConnection = Symbol('Server._onConnection')
 const _onRequest = Symbol('Server._onRequest')
 
 class Server extends EventEmitter {
-  constructor ({ auth, tls, responseDelay, idleDelay, transferDelay } = {}) {
+  constructor ({ auth, tls, family, responseDelay, idleDelay, transferDelay } = {}) {
     super()
+    this.family = typeof family === 'number' ? family : 0
     this.responseDelay = responseDelay || 0
     this.idleDelay = idleDelay || 0
     this.transferDelay = transferDelay || 0
@@ -40,7 +41,18 @@ class Server extends EventEmitter {
   }
 
   async start () {
-    this.server.listen(0, 'localhost')
+    let host
+    if (this.family === 0) {
+      host = 'localhost'
+    } else if (this.family === 4) {
+      host = '127.0.0.1'
+    } else if (this.family === 6) {
+      host = '::1'
+    }
+    this.server.listen({
+      port: 0,
+      host,
+    })
     await once(this.server, 'listening')
 
     const address = this.server.address()

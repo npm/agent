@@ -17,8 +17,9 @@ const _onConnect = Symbol('Proxy._onConnect')
 const _onConnection = Symbol('Proxy._onConnection')
 
 class Proxy extends EventEmitter {
-  constructor ({ auth, tls: _tls, failConnect } = {}) {
+  constructor ({ auth, tls: _tls, family, failConnect } = {}) {
     super()
+    this.family = typeof family === 'number' ? family : 0
     this.failConnect = !!failConnect
     this.auth = !!auth
     if (this.auth) {
@@ -42,7 +43,18 @@ class Proxy extends EventEmitter {
   }
 
   async start () {
-    this.server.listen(0, 'localhost')
+    let host
+    if (this.family === 0) {
+      host = 'localhost'
+    } else if (this.family === 4) {
+      host = '127.0.0.1'
+    } else if (this.family === 6) {
+      host = '::1'
+    }
+    this.server.listen({
+      port: 0,
+      host,
+    })
     await once(this.server, 'listening')
 
     const address = this.server.address()
