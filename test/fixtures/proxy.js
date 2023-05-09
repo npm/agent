@@ -7,6 +7,7 @@ const { readFileSync } = require('fs')
 const http = require('http')
 const https = require('https')
 const net = require('net')
+const tls = require('tls')
 
 const OK_MSG = Buffer.from('HTTP/1.1 200 Connection Established\r\n\r\n')
 const FAIL_MSG = Buffer.from('HTTP/1.1 500 Internal Server Error\r\n\r\n')
@@ -16,16 +17,15 @@ const _onConnect = Symbol('Proxy._onConnect')
 const _onConnection = Symbol('Proxy._onConnection')
 
 class Proxy extends EventEmitter {
-  constructor ({ auth, tls, failConnect, failTimeout } = {}) {
+  constructor ({ auth, tls: _tls, failConnect } = {}) {
     super()
     this.failConnect = !!failConnect
-    this.failTimeout = !!failTimeout
     this.auth = !!auth
     if (this.auth) {
       this.username = randomBytes(8).toString('hex')
       this.password = randomBytes(8).toString('hex')
     }
-    this.tls = !!tls
+    this.tls = !!_tls
     this.server = this.tls
       ? https.createServer({
         key: readFileSync(join(__dirname, 'fake-key.pem')),
@@ -76,12 +76,7 @@ class Proxy extends EventEmitter {
       return socket.end(FAIL_MSG)
     }
 
-    // if we want a timeout, just do nothing at all
-    if (this.failTimeout) {
-      return
-    }
-
-    if (this.username && this.password) {
+    if (this.auth) {
       const auth = req.headers['proxy-authentication']
       const [username, password] = Buffer.from(auth, 'base64').toString().split(':')
       if (username !== this.username || password !== this.password) {
@@ -96,12 +91,23 @@ class Proxy extends EventEmitter {
       rejectUnauthorized: false,
     }
 
-    const proxy = net.connect(connectOptions, () => {
+    const onConnect = () => {
       socket.write(OK_MSG, () => {
         socket.pipe(proxy)
         proxy.pipe(socket)
+        socket.once('error', () => {
+          proxy.end()
+        })
+
+        proxy.once('error', () => {
+          socket.end()
+        })
       })
-    })
+    }
+
+    const proxy = url.protocol === 'https:'
+      ? tls.connect(connectOptions, onConnect)
+      : net.connect(connectOptions, onConnect)
   }
 
   [_onConnection] (socket) {

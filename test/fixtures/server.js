@@ -11,8 +11,12 @@ const _onConnection = Symbol('Server._onConnection')
 const _onRequest = Symbol('Server._onRequest')
 
 class Server extends EventEmitter {
-  constructor ({ auth, tls } = {}) {
+  constructor ({ auth, tls, responseDelay, idleDelay, transferDelay } = {}) {
     super()
+    this.responseDelay = responseDelay || 0
+    this.idleDelay = idleDelay || 0
+    this.transferDelay = transferDelay || 0
+    // this.failIdle = !!failIdle
     this.auth = !!auth
     if (this.auth) {
       this.username = randomBytes(8).toString('hex')
@@ -23,6 +27,7 @@ class Server extends EventEmitter {
       ? https.createServer({
         key: readFileSync(join(__dirname, 'fake-key.pem')),
         cert: readFileSync(join(__dirname, 'fake-cert.pem')),
+        rejectUnauthorized: false,
       })
       : http.createServer({})
     if (this.tls) {
@@ -51,7 +56,7 @@ class Server extends EventEmitter {
   async stop () {
     this.server.close()
     for (const socket of this.sockets) {
-      socket.destroy()
+      socket.destroySoon()
     }
 
     const check = async () => {
@@ -72,8 +77,35 @@ class Server extends EventEmitter {
   }
 
   [_onRequest] (req, res) {
-    res.writeHead(200)
-    res.end('OK!')
+    if (this.auth) {
+      const _auth = req.headers.authorization.slice('Basic '.length)
+      const [username, password] = Buffer.from(_auth, 'base64').toString().split(':')
+      if (username !== this.username || password !== this.password) {
+        res.writeHead(401)
+        return res.end()
+      }
+    }
+
+    setTimeout(() => {
+      if (!res.destroyed) {
+        res.writeHead(200)
+        setTimeout(() => {
+          if (!res.destroyed) {
+            res.write('O')
+            setTimeout(() => {
+              if (!res.destroyed) {
+                res.end('K!')
+              }
+            }, this.transferDelay)
+          }
+        }, this.idleDelay)
+      }
+    }, this.responseDelay)
+    // // failIdle tells us to never respond, which can trip all the types of timeouts
+    // if (!this.failIdle) {
+    //   res.writeHead(200)
+    //   res.end('OK!')
+    // }
   }
 }
 
