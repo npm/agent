@@ -49,6 +49,6 @@
     ]
   },
   "dependencies": {
-    "lru-cache": "^7.18.3"
+    "lru-cache": "^9.1.1"
   }
 }
