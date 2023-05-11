@@ -36,6 +36,7 @@
     "@npmcli/template-oss": "4.15.1",
     "minipass-fetch": "^3.0.3",
     "nock": "^13.2.7",
+    "simple-socks": "^2.2.2",
     "tap": "^16.3.0"
   },
   "repository": {
@@ -49,6 +50,7 @@
     ]
   },
   "dependencies": {
-    "lru-cache": "^7.18.3"
+    "lru-cache": "^7.18.3",
+    "socks": "^2.7.1"
   }
 }
