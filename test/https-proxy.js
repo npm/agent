@@ -277,7 +277,10 @@ t.test('http destination', (t) => {
     })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ECONNECTIONTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ECONNECTIONTIMEOUT',
+      host: (new URL(proxy.address).host),
+    })
   })
 
   t.test('idle timeout rejects', async (t) => {
@@ -299,7 +302,10 @@ t.test('http destination', (t) => {
     })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'EIDLETIMEOUT',
+      host: (new URL(proxy.address).host),
+    })
   })
 
   t.test('response timeout rejects', async (t) => {
@@ -321,7 +327,14 @@ t.test('http destination', (t) => {
     })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ERESPONSETIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
   })
 
   t.test('transfer timeout rejects', async (t) => {
@@ -343,7 +356,14 @@ t.test('http destination', (t) => {
     })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ETRANSFERTIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
   })
 
   t.end()
@@ -522,7 +542,11 @@ t.test('https destination', (t) => {
     const agent = new HttpsAgent({ proxy: badProxy, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
+    await t.rejects(client.get('/'), {
+      code: 'EINVALIDRESPONSE',
+      proxy: new URL(badProxy),
+      status: 401,
+    })
   })
 
   t.test('can send auth to proxy', async (t) => {
@@ -582,7 +606,11 @@ t.test('https destination', (t) => {
     const agent = new HttpsAgent({ proxy: proxy.address, rejectUnauthorized: false })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'EINVALIDRESPONSE' })
+    await t.rejects(client.get('/'), {
+      code: 'EINVALIDRESPONSE',
+      proxy: new URL(proxy.address),
+      status: 500,
+    })
   })
 
   t.test('connection timeout rejects', async (t) => {
@@ -614,7 +642,10 @@ t.test('https destination', (t) => {
     const agent = new MockedAgent({ timeouts: { connection: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ECONNECTIONTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ECONNECTIONTIMEOUT',
+      host: (new URL(proxy.address).hostname),
+    })
   })
 
   t.test('idle timeout rejects', async (t) => {
@@ -636,7 +667,10 @@ t.test('https destination', (t) => {
     })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'EIDLETIMEOUT',
+      host: (new URL(proxy.address).hostname),
+    })
   })
 
   t.test('response timeout rejects', async (t) => {
@@ -658,7 +692,14 @@ t.test('https destination', (t) => {
     })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ERESPONSETIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
   })
 
   t.test('transfer timeout rejects', async (t) => {
@@ -680,7 +721,14 @@ t.test('https destination', (t) => {
     })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ETRANSFERTIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
   })
 
   t.end()

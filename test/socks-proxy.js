@@ -299,7 +299,10 @@ t.test('http destination', (t) => {
     const agent = new MockedAgent({ timeouts: { connection: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ECONNECTIONTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ECONNECTIONTIMEOUT',
+      host: (new URL(proxy.address).hostname),
+    })
   })
 
   t.test('idle timeout rejects', async (t) => {
@@ -317,7 +320,10 @@ t.test('http destination', (t) => {
     const agent = new HttpAgent({ timeouts: { idle: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'EIDLETIMEOUT',
+      host: (new URL(proxy.address).hostname),
+    })
   })
 
   t.test('response timeout rejects', async (t) => {
@@ -335,7 +341,14 @@ t.test('http destination', (t) => {
     const agent = new HttpAgent({ timeouts: { response: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ERESPONSETIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
   })
 
   t.test('transfer timeout rejects', async (t) => {
@@ -353,7 +366,14 @@ t.test('http destination', (t) => {
     const agent = new HttpAgent({ timeouts: { transfer: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ETRANSFERTIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
   })
 
   t.end()
@@ -599,7 +619,10 @@ t.test('https destination', (t) => {
     const agent = new MockedAgent({ timeouts: { connection: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ECONNECTIONTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ECONNECTIONTIMEOUT',
+      host: (new URL(proxy.address).hostname),
+    })
   })
 
   t.test('idle timeout rejects', async (t) => {
@@ -617,7 +640,10 @@ t.test('https destination', (t) => {
     const agent = new HttpsAgent({ timeouts: { idle: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'EIDLETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'EIDLETIMEOUT',
+      host: (new URL(proxy.address).hostname),
+    })
   })
 
   t.test('response timeout rejects', async (t) => {
@@ -635,7 +661,14 @@ t.test('https destination', (t) => {
     const agent = new HttpsAgent({ timeouts: { response: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ERESPONSETIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ERESPONSETIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
 
     const longerAgent = new HttpsAgent({ timeouts: { response: 200 }, proxy: proxy.address })
     const longerClient = new Client(longerAgent, server.address)
@@ -660,7 +693,14 @@ t.test('https destination', (t) => {
     const agent = new HttpsAgent({ timeouts: { transfer: 100 }, proxy: proxy.address })
     const client = new Client(agent, server.address)
 
-    await t.rejects(client.get('/'), { code: 'ETRANSFERTIMEOUT' })
+    await t.rejects(client.get('/'), {
+      code: 'ETRANSFERTIMEOUT',
+      proxy: new URL(proxy.address),
+      request: {
+        host: (new URL(server.address).hostname),
+        path: '/',
+      },
+    })
   })
 
   t.end()
