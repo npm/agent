@@ -2,123 +2,330 @@
 
 const { randomBytes } = require('crypto')
 const { EventEmitter, once } = require('events')
+const net = require('net')
 const { readFileSync } = require('fs')
 const { join } = require('path')
 const http = require('http')
 const https = require('https')
+const timers = require('timers/promises')
+const { pipeline } = require('stream/promises')
+const simpleSocks = require('simple-socks')
+const fetch = require('minipass-fetch')
 
-const _onConnection = Symbol('Server._onConnection')
-const _onRequest = Symbol('Server._onRequest')
+const parseAuthHeader = (header) => {
+  const reqAuth = header.slice('Basic '.length)
+  return Buffer.from(reqAuth, 'base64').toString().split(':')
+}
 
 class Server extends EventEmitter {
-  constructor ({ auth, tls, family, responseDelay, idleDelay, transferDelay } = {}) {
+  #host
+  #protocol
+  #port
+  #auth = ''
+  #tls
+  #sockets = new Set()
+  #socketsCount = 0
+
+  constructor (t, {
+    auth,
+    family,
+    connectionEvent,
+    tls: _tls,
+    protocol = _tls ? 'https:' : 'http:',
+    createServer = _tls ? (o) => https.createServer(o.tls) : () => http.createServer(),
+  } = {}) {
     super()
-    this.family = typeof family === 'number' ? family : 0
-    this.responseDelay = responseDelay || 0
-    this.idleDelay = idleDelay || 0
-    this.transferDelay = transferDelay || 0
-    // this.failIdle = !!failIdle
-    this.auth = !!auth
-    if (this.auth) {
-      this.username = randomBytes(8).toString('hex')
-      this.password = randomBytes(8).toString('hex')
+
+    this.t = t
+    this.t.comment(`created ${this.constructor.name}`)
+
+    this.#protocol = protocol
+    this.#host = {
+      0: 'localhost',
+      4: '127.0.0.1',
+      6: '::1',
+    }[family ?? 0]
+
+    if (auth) {
+      const username = randomBytes(8).toString('hex')
+      const password = randomBytes(8).toString('hex')
+      this.#auth = `${username}:${password}@`
+      this.auth = (u, pw) => u === username && pw === password
     }
-    this.tls = !!tls
-    this.server = this.tls
-      ? https.createServer({
-        key: readFileSync(join(__dirname, 'fake-key.pem')),
-        cert: readFileSync(join(__dirname, 'fake-cert.pem')),
-        rejectUnauthorized: false,
-      })
-      : http.createServer({})
-    if (this.tls) {
-      this.server.on('secureConnection', (socket) => this[_onConnection](socket))
-    } else {
-      this.server.on('connection', (socket) => this[_onConnection](socket))
+
+    this.#tls = !_tls ? null : {
+      key: readFileSync(join(__dirname, 'fake-key.pem')),
+      cert: readFileSync(join(__dirname, 'fake-cert.pem')),
     }
-    this.server.on('request', (req, res) => this[_onRequest](req, res))
-    this.sockets = new Set()
+
+    this.server = createServer({ tls: this.#tls, auth: this.auth })
+    const onConnection = connectionEvent ?? (this.#tls ? 'secureConnection' : 'connection')
+    this.server.on(onConnection, this.#onConnection)
+  }
+
+  get sockets () {
+    return this.#socketsCount
+  }
+
+  get address () {
+    if (!this.#port) {
+      throw new Error('server has not been started')
+    }
+    return `${this.#protocol}//${this.#auth}localhost:${this.#port}`
   }
 
   async start () {
-    let host
-    if (this.family === 0) {
-      host = 'localhost'
-    } else if (this.family === 4) {
-      host = '127.0.0.1'
-    } else if (this.family === 6) {
-      host = '::1'
-    }
-    this.server.listen({
-      port: 0,
-      host,
-    })
+    this.server.listen(0, this.#host)
     await once(this.server, 'listening')
-
-    const address = this.server.address()
-    this.address = `http${this.tls ? 's' : ''}://`
-    if (this.auth) {
-      this.address += `${this.username}:${this.password}@`
-    }
-    this.address += `localhost:${address.port}`
-
-    return this
+    this.#port = this.server.address().port
   }
 
   async stop () {
     this.server.close()
-    for (const socket of this.sockets) {
+
+    for (const socket of this.#sockets) {
       socket.destroySoon()
     }
 
-    const check = async () => {
-      if (this.sockets.size) {
-        await new Promise((resolve) => setImmediate(resolve))
-        return check()
-      }
+    while (this.#sockets.size) {
+      await timers.setImmediate()
     }
-
-    return check()
   }
 
-  [_onConnection] (socket) {
-    this.sockets.add(socket)
-    socket.once('close', () => {
-      this.sockets.delete(socket)
-    })
-  }
-
-  [_onRequest] (req, res) {
-    if (this.auth) {
-      const _auth = req.headers.authorization.slice('Basic '.length)
-      const [username, password] = Buffer.from(_auth, 'base64').toString().split(':')
-      if (username !== this.username || password !== this.password) {
-        res.writeHead(401)
-        return res.end()
-      }
+  #onConnection = (socket) => {
+    this.t.comment(`${this.address} new socket tls:${!!this.#tls}`)
+    if (!this.#sockets.has(socket)) {
+      this.#socketsCount++
+      this.#sockets.add(socket)
+      socket.on('close', () => this.#sockets.delete(socket))
     }
-
-    setTimeout(() => {
-      if (!res.destroyed) {
-        res.writeHead(200)
-        setTimeout(() => {
-          if (!res.destroyed) {
-            res.write('O')
-            setTimeout(() => {
-              if (!res.destroyed) {
-                res.end('K!')
-              }
-            }, this.transferDelay)
-          }
-        }, this.idleDelay)
-      }
-    }, this.responseDelay)
-    // // failIdle tells us to never respond, which can trip all the types of timeouts
-    // if (!this.failIdle) {
-    //   res.writeHead(200)
-    //   res.end('OK!')
-    // }
   }
 }
 
-module.exports = Server
+class HttpServer extends Server {
+  #responseDelay
+  #idleDelay
+  #transferDelay
+
+  constructor (t, { responseDelay, idleDelay, transferDelay, ...options } = {}) {
+    super(t, options)
+
+    this.#responseDelay = responseDelay ?? 0
+    this.#idleDelay = idleDelay ?? 0
+    this.#transferDelay = transferDelay ?? 0
+
+    this.server.on('request', this.#onRequest)
+  }
+
+  #onRequest = async (req, res) => {
+    this.t.comment(this.constructor.name, 'on request')
+
+    if (this.auth && !this.auth(...parseAuthHeader(req.headers.authorization))) {
+      res.writeHead(401)
+      return res.end()
+    }
+
+    await timers.setTimeout(this.#responseDelay)
+    if (!res.destroyed) {
+      res.writeHead(200, {
+        'X-Echo-Headers': JSON.stringify(req.rawHeaders),
+      })
+    }
+
+    await timers.setTimeout(this.#idleDelay)
+    if (!res.destroyed) {
+      res.write('O')
+    }
+
+    await timers.setTimeout(this.#transferDelay)
+    if (!res.destroyed) {
+      res.end('K!')
+    }
+  }
+}
+
+class HttpsServer extends HttpServer {
+  constructor (t, options) {
+    super(t, { ...options, tls: true })
+  }
+}
+
+class HttpProxy extends Server {
+  #OK_MSG = Buffer.from('HTTP/1.1 200 Connection Established\r\n\r\n')
+  #FAIL_MSG = Buffer.from('HTTP/1.1 500 Internal Server Error\r\n\r\n')
+  #NO_AUTH_MSG = Buffer.from('HTTP/1.1 401 Unauthorized\r\n\r\n')
+
+  #httpAgent
+  #httpsAgent
+  #failConnect
+  #secure
+
+  constructor (t, { httpAgent, httpsAgent, failConnect, secure, ...options } = {}) {
+    super(t, options)
+
+    if (this.auth) {
+      const _auth = this.auth
+      this.auth = (req) => _auth(...parseAuthHeader(req.headers['proxy-authorization']))
+    }
+
+    this.#httpAgent = httpAgent
+    this.#httpsAgent = httpsAgent
+    this.#failConnect = failConnect
+    this.#secure = secure
+
+    this.server.on('request', this.#onRequest)
+    this.server.on('connect', this.#onConnect)
+  }
+
+  #onRequest = async (req, res) => {
+    if (this.#failConnect) {
+      res.writeHead(500)
+      return res.end()
+    }
+
+    if (this.auth && !this.auth(req)) {
+      res.writeHead(401)
+      return res.end()
+    }
+
+    const [host, port] = req.headers.host.split(':')
+
+    this.t.comment(`onRequest proxy request to ${host}:${port}`)
+
+    const clientReq = (this.#secure ? https : http).request({
+      agent: this.#secure ? this.#httpsAgent : this.#httpAgent,
+      host,
+      port,
+      headers: req.headers,
+      method: req.method,
+    })
+
+    let clientRes
+    try {
+      clientRes = await once(clientReq.end(), 'response').then(r => r[0])
+    } catch (err) {
+      res.writeHead(501)
+      return res.end('proxy request error: ' + err.message)
+    }
+
+    res.writeHead(clientRes.statusCode, clientRes.headers)
+
+    try {
+      await pipeline(clientRes, res)
+    } catch (err) {
+      res.writeHead(502)
+      return res.end('proxy pipeline error: ' + err.message)
+    }
+  }
+
+  #onConnect = async (req, socket) => {
+    if (this.#failConnect) {
+      return socket.end(this.#FAIL_MSG)
+    }
+
+    if (this.auth && !this.auth(req)) {
+      return socket.end(this.#NO_AUTH_MSG)
+    }
+
+    const url = new URL(`http://${req.url}`)
+    this.t.comment(`onConnect proxy request to ${url.hostname}:${url.port}`)
+
+    // initial connection needs to use net socket to avoid TLS errors
+    // https-proxy-agent then upgrades the socket to tls
+    const proxy = net.connect({
+      host: url.hostname,
+      port: url.port,
+      ...(this.#secure ? this.#httpsAgent : this.#httpAgent).options,
+    })
+
+    try {
+      await once(proxy, 'connect')
+    } catch (err) {
+      this.t.comment(err)
+      return socket.end('whoops')
+    }
+
+    await new Promise((res) => socket.write(this.#OK_MSG, res))
+
+    socket.pipe(proxy)
+    proxy.pipe(socket)
+    socket.once('error', () => proxy.end())
+    proxy.once('error', () => socket.end())
+  }
+}
+
+class HttpsToHttpProxy extends HttpProxy {
+  constructor (t, options) {
+    super(t, { ...options, tls: true, secure: false })
+  }
+}
+
+class HttpToHttpsProxy extends HttpProxy {
+  constructor (t, options) {
+    super(t, { ...options, tls: false, secure: true })
+  }
+}
+
+class HttpsProxy extends HttpProxy {
+  constructor (t, options) {
+    super(t, { ...options, tls: true, secure: true })
+  }
+}
+
+class SocksProxy extends Server {
+  #failConnect
+
+  constructor (t, { protocol = 'socks:', failConnect, ...options } = {}) {
+    super(t, {
+      ...options,
+      protocol,
+      connectionEvent: 'handshake',
+      createServer: ({ auth }) => simpleSocks.createServer({
+        authenticate: (username, password, _, callback) => {
+          const args = auth ? [auth(username, password) ? null : new Error('Invalid auth')] : []
+          return setImmediate(callback, ...args)
+        },
+      }),
+    })
+
+    this.#failConnect = failConnect
+    this.server.on('proxyConnect', this.#proxyConnect)
+  }
+
+  #proxyConnect = (_, socket) => {
+    if (this.#failConnect) {
+      socket.destroy(new Error('failConnect!'))
+    }
+  }
+}
+
+class Client {
+  constructor (agent, base, tap) {
+    this.agent = agent
+    this.base = base
+    this.t = tap
+  }
+
+  async get (url) {
+    const parsed = new URL(url, this.base)
+    this.t.comment('client get', parsed.href)
+    const res = await fetch(parsed.href, { agent: this.agent, rejectUnauthorized: false })
+    res.result = await res.text()
+    return res
+  }
+}
+
+module.exports = {
+  Server: {
+    Http: HttpServer,
+    Https: HttpsServer,
+  },
+  Proxy: {
+    HttpToHttp: HttpProxy,
+    HttpToHttps: HttpToHttpsProxy,
+    HttpsToHttp: HttpsToHttpProxy,
+    HttpsToHttps: HttpsProxy,
+    Socks: SocksProxy,
+  },
+  Client,
+}

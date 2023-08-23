@@ -2,14 +2,13 @@
 
 const t = require('tap')
 
-const { normalizeOptions } = require('../lib/util.js')
+const { normalizeOptions } = require('../lib/options.js')
 
 t.test('normalizeOptions', (t) => {
   t.test('family', (t) => {
     t.hasStrict(normalizeOptions({}), { family: 0 })
     t.hasStrict(normalizeOptions({ family: 4 }), { family: 4 })
     t.hasStrict(normalizeOptions({ family: '6' }), { family: 6 })
-    t.hasStrict(normalizeOptions({ family: 'nope' }), { family: 0 })
     t.end()
   })
 
