@@ -4,12 +4,14 @@ const t = require('tap')
 const timers = require('timers/promises')
 const { createSetup } = require('./fixtures/setup.js')
 
+const ipv4Default = process.version.startsWith('v16.')
+const isWindows = process.platform === 'win32'
+
 const agentTest = (t, opts) => {
   const { setup, hasProxy, isSocks } = createSetup(opts)
   // node changed dns resolution to prefer ipv6 over ipv4 in >=18 since we dont
   // want to set defaults for that in the agent we need to test based on that
   // which will affect whether some requests fail
-  const ipv4Default = process.version.startsWith('v16.')
 
   t.test('single request basic', async (t) => {
     const { client } = await setup(t)
@@ -186,7 +188,12 @@ const agentTest = (t, opts) => {
       })
 
       if (isSocks) {
-        await t.rejects(client.get('/'))
+        // weird bug that fails with a message about node internals only on this specific
+        // node version in windows. skipping this test for now to ship these agent updates.
+        const skipThis = process.version === 'v18.17.1' && isWindows && !opts.serverTls
+        if (!skipThis) {
+          await t.rejects(client.get('/'))
+        }
       } else {
         const res = await client.get('/')
         t.equal(res.status, 500)
@@ -302,12 +309,7 @@ const agentTest = (t, opts) => {
 
 const proxyTest = (t, opts) => {
   t.test('https destination', t => agentTest(t, { serverTls: true, ...opts }))
-  // weird bug that fails with a message about node internals only on this specific
-  // node version in windows. skipping this test for now to ship these agent updates.
-  const testThis = opts?.proxy?.type === 'Socks'
-    && process.version === 'v18.17.1'
-    && process.platform === 'win32' ? 'skip' : 'test'
-  t[testThis]('http destination', t => agentTest(t, { serverTls: false, ...opts }))
+  t.test('http destination', t => agentTest(t, { serverTls: false, ...opts }))
   t.end()
 }
 
