@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.1](https://github.com/npm/agent/compare/v2.1.0...v2.1.1) (2023-09-08)
+
+### Bug Fixes
+
+* [`9937e66`](https://github.com/npm/agent/commit/9937e6602d8448f65f05e17b4d5c2264caeae25e) [#55](https://github.com/npm/agent/pull/55) use current agent to determine secure proxy (@lukekarrys)
+
 ## [2.1.0](https://github.com/npm/agent/compare/v2.0.0...v2.1.0) (2023-08-30)
 
 ### Features
