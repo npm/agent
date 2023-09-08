@@ -9,7 +9,6 @@ const http = require('http')
 const https = require('https')
 const timers = require('timers/promises')
 const { pipeline } = require('stream/promises')
-const simpleSocks = require('simple-socks')
 const fetch = require('minipass-fetch')
 
 const parseAuthHeader = (header) => {
@@ -275,7 +274,7 @@ class HttpsProxy extends HttpProxy {
 class SocksProxy extends Server {
   #failConnect
 
-  constructor (t, { protocol = 'socks:', failConnect, ...options } = {}) {
+  constructor (t, { protocol = 'socks:', simpleSocks, failConnect, ...options } = {}) {
     super(t, {
       ...options,
       protocol,
