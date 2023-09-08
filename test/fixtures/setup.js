@@ -62,6 +62,7 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
         proxy = new Proxy[baseOpts.proxy?.type ?? `${tlsType(proxyTls)}To${serverType}`](t, {
           ...baseOpts.proxy,
           ...opts.proxy,
+          simpleSocks: await import('simple-socks').then(r => r.default),
           httpAgent: new HttpAgent(omit(agentOpts, 'timeouts')),
           httpsAgent: new HttpsAgent(omit(agentOpts, 'timeouts')),
         })
