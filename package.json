@@ -35,7 +35,8 @@
       "16.x",
       "18.0.0",
       "18.x"
-    ]
+    ],
+    "npmSpec": "next-9"
   },
   "dependencies": {
     "http-proxy-agent": "^7.0.0",
