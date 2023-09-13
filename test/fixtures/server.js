@@ -154,12 +154,11 @@ class HttpProxy extends Server {
   #FAIL_MSG = Buffer.from('HTTP/1.1 500 Internal Server Error\r\n\r\n')
   #NO_AUTH_MSG = Buffer.from('HTTP/1.1 401 Unauthorized\r\n\r\n')
 
-  #httpAgent
-  #httpsAgent
+  #agent
   #failConnect
   #secure
 
-  constructor (t, { httpAgent, httpsAgent, failConnect, secure, ...options } = {}) {
+  constructor (t, { agent, failConnect, secure, ...options } = {}) {
     super(t, options)
 
     if (this.auth) {
@@ -167,8 +166,7 @@ class HttpProxy extends Server {
       this.auth = (req) => _auth(...parseAuthHeader(req.headers['proxy-authorization']))
     }
 
-    this.#httpAgent = httpAgent
-    this.#httpsAgent = httpsAgent
+    this.#agent = agent
     this.#failConnect = failConnect
     this.#secure = secure
 
@@ -192,7 +190,7 @@ class HttpProxy extends Server {
     this.t.comment(`onRequest proxy request to ${host}:${port}`)
 
     const clientReq = (this.#secure ? https : http).request({
-      agent: this.#secure ? this.#httpsAgent : this.#httpAgent,
+      agent: this.#agent,
       host,
       port,
       headers: req.headers,
@@ -234,7 +232,7 @@ class HttpProxy extends Server {
     const proxy = net.connect({
       host: url.hostname,
       port: url.port,
-      ...(this.#secure ? this.#httpsAgent : this.#httpAgent).options,
+      ...this.#agent.options,
     })
 
     try {

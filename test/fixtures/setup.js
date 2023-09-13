@@ -16,14 +16,6 @@ const omit = (obj, ...keys) => {
   return res
 }
 
-class MockSocket extends net.Socket {
-  // this looks strange, but it's because the socket receives a write
-  // immediately after being created, and if the socket is not connected
-  // or trying to connect, then we get an ERR_SOCKET_CLOSED. by making this
-  // function a no-op we prevent the connection _and_ the error
-  _writeGeneric () {}
-}
-
 const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
   const hasProxy = typeof proxyTls === 'boolean' || Object.keys(baseOpts.proxy ?? {}).length
   const isSocks = baseOpts.proxy?.type === 'Socks'
@@ -35,20 +27,7 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
         opts.mock = {}
       }
 
-      let socket
-      if (opts.mock.mockSocket) {
-        t.comment('mock socket')
-        delete opts.mock.mockSocket
-        socket = new MockSocket()
-        opts.mock[serverTls ? 'tls' : 'net'] = {
-          ...[serverTls ? tls : net],
-          connect: () => {
-            return socket
-          },
-        }
-      }
-
-      const { cache, HttpsAgent, HttpAgent } = t.mock('../../lib/index.js', opts.mock)
+      const { cache, Agent } = t.mock('../../lib/index.js', opts.mock)
 
       const serverType = tlsType(serverTls)
       const server = new Server[serverType](t, { ...baseOpts.server, ...opts.server })
@@ -62,15 +41,14 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
         proxy = new Proxy[baseOpts.proxy?.type ?? `${tlsType(proxyTls)}To${serverType}`](t, {
           ...baseOpts.proxy,
           ...opts.proxy,
+          agent: new Agent(omit(agentOpts, 'timeouts')),
           simpleSocks: await import('simple-socks').then(r => r.default),
-          httpAgent: new HttpAgent(omit(agentOpts, 'timeouts')),
-          httpsAgent: new HttpsAgent(omit(agentOpts, 'timeouts')),
         })
         await proxy.start()
         t.comment(`Proxy: ${proxy.address}`)
       }
 
-      const createAgent = (o) => new (serverTls ? HttpsAgent : HttpAgent)({
+      const createAgent = (o) => new Agent({
         ...(proxy && { proxy: proxy.address }),
         ...agentOpts,
         ...o,
@@ -89,7 +67,6 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
       })
 
       return {
-        socket,
         server,
         proxy,
         agent,
@@ -101,6 +78,33 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
   }
 }
 
+class HangingSocket extends net.Socket {
+  connecting = true
+  secureConnecting = true
+  // this looks strange, but it's because the socket receives a write
+  // immediately after being created, and if the socket is not connected
+  // or trying to connect, then we get an ERR_SOCKET_CLOSED. by making this
+  // function a no-op we prevent the connection _and_ the error
+  _writeGeneric () {}
+}
+
+const mockConnect = (socket = new HangingSocket()) => {
+  return {
+    socket,
+    mocks: {
+      net: {
+        ...net,
+        connect: () => socket,
+      },
+      tls: {
+        ...tls,
+        connect: () => socket,
+      },
+    },
+  }
+}
+
 module.exports = {
   createSetup,
+  mockConnect,
 }
