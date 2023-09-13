@@ -4,6 +4,7 @@ const t = require('tap')
 
 const {
   getAgent,
+  Agent,
   HttpAgent,
   HttpsAgent,
 } = require('../lib/index.js')
@@ -12,12 +13,14 @@ t.test('getAgent', (t) => {
   t.test('returns HttpAgent for http url', (t) => {
     const agent = getAgent('http://localhost')
     t.type(agent, HttpAgent)
+    t.type(agent, Agent)
     t.end()
   })
 
   t.test('returns HttpsAgent for https url', (t) => {
     const agent = getAgent('https://localhost')
     t.type(agent, HttpsAgent)
+    t.type(agent, Agent)
     t.end()
   })
 

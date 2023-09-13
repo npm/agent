@@ -2,7 +2,7 @@
 
 const t = require('tap')
 const timers = require('timers/promises')
-const { createSetup } = require('./fixtures/setup.js')
+const { createSetup, mockConnect } = require('./fixtures/setup.js')
 
 const ipv4Default = process.version.startsWith('v16.')
 const isWindows = process.platform === 'win32'
@@ -142,6 +142,17 @@ const agentTest = (t, opts) => {
   })
 
   if (hasProxy) {
+    t.test('use no proxy', async (t) => {
+      const { client } = await setup(t, {
+        agent: { noProxy: 'localhost' },
+      })
+
+      const res = await client.get('/')
+      t.equal(res.status, 200)
+      t.equal(res.headers.get('connection'), 'keep-alive', 'keep-alive by default')
+      t.equal(res.result, 'OK!')
+    })
+
     t.test('invalid proxy auth rejects', async (t) => {
       const { server, proxy, createClient, createAgent } = await setup(t, {
         proxy: { auth: true },
@@ -201,37 +212,53 @@ const agentTest = (t, opts) => {
     })
   }
 
+  t.test('socket error', async t => {
+    const { socket, mocks } = mockConnect()
+
+    const { client } = await setup(t, {
+      mock: {
+        ...mocks,
+        'http-proxy-agent': t.mock('http-proxy-agent', mocks),
+        'https-proxy-agent': t.mock('https-proxy-agent', mocks),
+        'socks-proxy-agent': t.mock('socks-proxy-agent', {
+          socks: {
+            SocksClient: class {
+              static createConnection = () => ({ socket })
+            },
+          },
+        }),
+      },
+    })
+
+    const res = client.get('/')
+    await timers.setImmediate()
+    socket.emit('error', { code: 'KABOOM' })
+    await t.rejects(res, { code: 'KABOOM' })
+  })
+
   t.test('connection timeout rejects', async (t) => {
-    const { socket, server, client } = await setup(t, {
+    const delay = () => timers.setTimeout(1000)
+
+    const { server, client } = await setup(t, {
       agent: { timeouts: { connection: 100 } },
       mock: {
-        ...(isSocks ? {
-          'socks-proxy-agent': t.mock('socks-proxy-agent', {
-            socks: {
-              SocksClient: class {
-                static async createConnection () {
-                  await timers.setTimeout(1000)
-                }
-              },
-            },
-          }),
-        } : hasProxy ? {
-          'http-proxy-agent': {
-            HttpProxyAgent: class {
-              async connect () {
-                await timers.setTimeout(1000)
-              }
+        ...mockConnect().mocks,
+        'http-proxy-agent': {
+          HttpProxyAgent: class {
+            connect = delay
+          },
+        },
+        'https-proxy-agent': {
+          HttpsProxyAgent: class {
+            connect = delay
+          },
+        },
+        'socks-proxy-agent': t.mock('socks-proxy-agent', {
+          socks: {
+            SocksClient: class {
+              static createConnection = delay
             },
           },
-          'https-proxy-agent': {
-            HttpsProxyAgent: class {
-              async connect () {
-                await timers.setTimeout(1000)
-              }
-            },
-          },
-        } : {
-          mockSocket: true,
         }),
       },
     })
@@ -240,15 +267,14 @@ const agentTest = (t, opts) => {
       code: 'ECONNECTIONTIMEOUT',
       host: (new URL(server.address).host),
     })
+  })
 
-    if (!hasProxy) {
-      // this ensures that an error event on the socket before the
-      // connect event occurs gets raised
-      const secondFetch = client.get('/')
-      await timers.setImmediate()
-      socket.emit('error', { code: 'KABOOM' })
-      await t.rejects(secondFetch, { code: 'KABOOM' })
-    }
+  t.test('connection timeout does not reject when long enough', async (t) => {
+    const { client } = await setup(t, {
+      agent: { timeouts: { connection: 1000 } },
+    })
+
+    t.ok(await client.get('/'))
   })
 
   t.test('idle timeout rejects', async (t) => {
