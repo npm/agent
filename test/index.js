@@ -271,6 +271,10 @@ t.test('getAgent', (t) => {
 })
 
 t.test('http agent', (t) => {
+  t.test('does not throw with no args', async (t) => {
+    t.ok(new HttpAgent())
+  })
+
   t.test('throws for incompatible proxy protocols', async (t) => {
     t.throws(() => {
       new HttpAgent({ proxy: 'foo://not-supported' })
