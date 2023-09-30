@@ -29,7 +29,8 @@
   "templateOSS": {
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
     "version": "4.19.0",
-    "publish": "true"
+    "publish": "true",
+    "latestCiVersion": 18
   },
   "dependencies": {
     "http-proxy-agent": "^7.0.0",
