@@ -140,6 +140,29 @@ t.test('getAgent', (t) => {
     t.end()
   })
 
+  t.test('respects proxy for http target if proxy=null is passed in', (t) => {
+    process.env.proxy = 'http://localhost'
+    t.teardown(() => {
+      delete process.env.proxy
+    })
+
+    const { getAgent: getEnvAgent, HttpAgent: EnvHttpAgent } = t.mock('../lib/index.js')
+
+    const agent = getEnvAgent('http://localhost')
+    t.type(agent, EnvHttpAgent)
+    t.hasStrict(agent, {
+      proxy: {
+        url: {
+          protocol: 'http:',
+          hostname: 'localhost',
+          port: '',
+        },
+      },
+    })
+
+    t.end()
+  })
+
   t.test('ignores http_proxy for https target', (t) => {
     process.env.http_proxy = 'http://localhost'
     t.teardown(() => {
@@ -148,7 +171,7 @@ t.test('getAgent', (t) => {
 
     const { getAgent: getEnvAgent, HttpsAgent: EnvHttpsAgent } = t.mock('../lib/index.js')
 
-    const agent = getEnvAgent('https://localhost')
+    const agent = getEnvAgent('https://localhost', { proxy: null })
     t.type(agent, EnvHttpsAgent)
     t.notOk(agent.proxy.url)
 
