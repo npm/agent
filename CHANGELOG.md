@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.2.0](https://github.com/npm/agent/compare/v2.1.1...v2.2.0) (2023-10-02)
+
+### Features
+
+* [`e24eb6c`](https://github.com/npm/agent/commit/e24eb6c042424e6a83d5fb37a7ff91f7daf6f6f2) [#59](https://github.com/npm/agent/pull/59) use agent-base (@lukekarrys)
+
+### Bug Fixes
+
+* [`d2608ea`](https://github.com/npm/agent/commit/d2608ea5ed6bf973a316c128ecf77601e4254f3e) [#59](https://github.com/npm/agent/pull/59) remove unnecessary utils and cleanup destructuring (@lukekarrys)
+* [`4d4b70c`](https://github.com/npm/agent/commit/4d4b70c2a99011909b8f3b58f1e23fcb45cf2ff2) [#67](https://github.com/npm/agent/pull/67) set proxy from env vars based on truthiness (@lukekarrys)
+
 ## [2.1.1](https://github.com/npm/agent/compare/v2.1.0...v2.1.1) (2023-09-08)
 
 ### Bug Fixes
