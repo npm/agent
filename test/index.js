@@ -151,7 +151,7 @@ t.test('getAgent', (t) => {
 
     const { getAgent: getEnvAgent, HttpAgent: EnvHttpAgent } = t.mock('../lib/index.js')
 
-    const agent = getEnvAgent('http://localhost')
+    const agent = getEnvAgent('http://localhost', { proxy: null })
     t.type(agent, EnvHttpAgent)
     t.hasStrict(agent, {
       proxy: {
@@ -174,7 +174,7 @@ t.test('getAgent', (t) => {
 
     const { getAgent: getEnvAgent, HttpsAgent: EnvHttpsAgent } = t.mock('../lib/index.js')
 
-    const agent = getEnvAgent('https://localhost', { proxy: null })
+    const agent = getEnvAgent('https://localhost')
     t.type(agent, EnvHttpsAgent)
     t.notOk(agent.proxy.url)
 
