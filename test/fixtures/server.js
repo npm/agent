@@ -8,7 +8,6 @@ const { join } = require('path')
 const http = require('http')
 const https = require('https')
 const timers = require('timers/promises')
-const { pipeline } = require('stream/promises')
 const fetch = require('minipass-fetch')
 
 const parseAuthHeader = (header) => {
@@ -206,12 +205,8 @@ class HttpProxy extends Server {
     }
 
     res.writeHead(clientRes.statusCode, clientRes.headers)
-
-    try {
-      await pipeline(clientRes, res)
-    } catch (err) {
-      return res.end('proxy pipeline error: ' + err.message)
-    }
+    clientRes.pipe(res)
+    clientRes.once('error', () => res.end())
   }
 
   #onConnect = async (req, socket) => {
