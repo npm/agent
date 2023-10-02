@@ -29,8 +29,7 @@
   "templateOSS": {
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
     "version": "4.19.0",
-    "publish": "true",
-    "latestCiVersion": 18
+    "publish": "true"
   },
   "dependencies": {
     "agent-base": "^7.1.0",
@@ -44,6 +43,7 @@
     "@npmcli/template-oss": "4.19.0",
     "minipass-fetch": "^3.0.3",
     "nock": "^13.2.7",
+    "semver": "^7.5.4",
     "simple-socks": "^3.1.0",
     "tap": "^16.3.0"
   },
