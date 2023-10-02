@@ -1,8 +1,17 @@
 'use strict'
 
 const t = require('tap')
+const net = require('net')
 const timers = require('timers/promises')
+const semver = require('semver')
 const { createSetup, mockConnect } = require('./fixtures/setup.js')
+
+// This is a global setter available in Node 18.18.0+ that we need to set so we
+// can get the same successes/failures for tests that rely on the default
+// autoselectfamily behavior
+if (net.setDefaultAutoSelectFamily) {
+  net.setDefaultAutoSelectFamily(false)
+}
 
 const ipv4Default = process.version.startsWith('v16.')
 const isWindows = process.platform === 'win32'
@@ -199,9 +208,9 @@ const agentTest = (t, opts) => {
       })
 
       if (isSocks) {
-        // weird bug that fails with a message about node internals only on this specific
+        // weird bug that fails with a message about node internals starting with this specific
         // node version in windows. skipping this test for now to ship these agent updates.
-        const skipThis = process.version === 'v18.17.1' && isWindows && !opts.serverTls
+        const skipThis = semver.gte(process.version, '18.17.1') && isWindows && !opts.serverTls
         if (!skipThis) {
           await t.rejects(client.get('/'))
         }

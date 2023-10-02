@@ -210,7 +210,6 @@ class HttpProxy extends Server {
     try {
       await pipeline(clientRes, res)
     } catch (err) {
-      res.writeHead(502)
       return res.end('proxy pipeline error: ' + err.message)
     }
   }
