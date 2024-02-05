@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.1](https://github.com/npm/agent/compare/v2.2.0...v2.2.1) (2024-02-01)
+
+### Bug Fixes
+
+* [`88212cc`](https://github.com/npm/agent/commit/88212ccbfebdc10ec97656e5ffc8415a9aa84de8) [#92](https://github.com/npm/agent/pull/92) properly differentiate http and https proxies (#92) (@Torbjorn-Svensson)
+
+### Chores
+
+* [`9ffc694`](https://github.com/npm/agent/commit/9ffc69422e74024bffc72af68ffa6f9175a2d6b7) [#90](https://github.com/npm/agent/pull/90) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`7243097`](https://github.com/npm/agent/commit/7243097fe24986340a9dce49ba7116798b21727b) [#90](https://github.com/npm/agent/pull/90) bump @npmcli/template-oss from 4.21.1 to 4.21.3 (@dependabot[bot])
+* [`ee9ea76`](https://github.com/npm/agent/commit/ee9ea767488f553a8c8d72accad494246e937934) [#88](https://github.com/npm/agent/pull/88) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`e169c95`](https://github.com/npm/agent/commit/e169c95a01fd7023e9ead948c331a032db3c2c51) [#88](https://github.com/npm/agent/pull/88) bump @npmcli/template-oss from 4.19.0 to 4.21.1 (@dependabot[bot])
+* [`cfdcf70`](https://github.com/npm/agent/commit/cfdcf70a47f8b2aff924a00a9bb635a624ee6906) [#73](https://github.com/npm/agent/pull/73) move proxy:null to correct test (@lukekarrys)
+
 ## [2.2.0](https://github.com/npm/agent/compare/v2.1.1...v2.2.0) (2023-10-02)
 
 ### Features
