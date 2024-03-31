@@ -1,19 +1,10 @@
 'use strict'
 
 const t = require('tap')
-const net = require('net')
 const timers = require('timers/promises')
 const semver = require('semver')
 const { createSetup, mockConnect } = require('./fixtures/setup.js')
 
-// This is a global setter available in Node 18.18.0+ that we need to set so we
-// can get the same successes/failures for tests that rely on the default
-// autoselectfamily behavior
-if (net.setDefaultAutoSelectFamily) {
-  net.setDefaultAutoSelectFamily(false)
-}
-
-const ipv4Default = process.version.startsWith('v16.')
 const isWindows = process.platform === 'win32'
 
 const agentTest = (t, opts) => {
@@ -39,32 +30,14 @@ const agentTest = (t, opts) => {
       agent: { family: 4 },
     })
 
-    // socks-proxy-agent doesnt allow setting ip family on socket
-    // will be possible when https://github.com/TooTallNate/proxy-agents/pull/241 lands
-    if (isSocks) {
-      if (ipv4Default) {
-        t.ok(await client.get('/'))
-      } else {
-        await t.rejects(client.get('/'))
-      }
-    } else {
-      const res = await client.get('/')
-      t.equal(res.status, 200)
-      t.equal(res.result, 'OK!')
-    }
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
 
     const mismatchAgent = createAgent({ family: 6 })
     const mismatchClient = createClient(mismatchAgent)
 
-    if (isSocks) {
-      if (ipv4Default) {
-        t.ok(await mismatchClient.get('/'))
-      } else {
-        await t.rejects(mismatchClient.get('/'), { code: 'FETCH_ERROR' })
-      }
-    } else {
-      await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
-    }
+    await t.rejects(mismatchClient.get('/'), { code: isSocks ? 'FETCH_ERROR' : 'ECONNREFUSED' })
   })
 
   t.test('single request ipv6 only', async (t) => {
@@ -74,28 +47,14 @@ const agentTest = (t, opts) => {
       agent: { family: 6 },
     })
 
-    if (ipv4Default && isSocks) {
-      await t.rejects(client.get('/'))
-    } else {
-      const res = await client.get('/')
-      t.equal(res.status, 200)
-      t.equal(res.result, 'OK!')
-    }
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
 
     const mismatchAgent = createAgent({ family: 4 })
     const mismatchClient = createClient(mismatchAgent)
 
-    // socks-proxy-agent doesnt allow setting ip family on socket
-    // will be possible when https://github.com/TooTallNate/proxy-agents/pull/241 lands
-    if (isSocks) {
-      if (ipv4Default) {
-        await t.rejects(mismatchClient.get('/'), { code: 'FETCH_ERROR' })
-      } else {
-        t.ok(await mismatchClient.get('/'))
-      }
-    } else {
-      await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
-    }
+    await t.rejects(mismatchClient.get('/'), { code: isSocks ? 'FETCH_ERROR' : 'ECONNREFUSED' })
   })
 
   t.test('can disable keep-alive', async (t) => {

@@ -32,18 +32,18 @@
     "publish": "true"
   },
   "dependencies": {
-    "agent-base": "^7.1.0",
-    "http-proxy-agent": "^7.0.0",
-    "https-proxy-agent": "^7.0.1",
-    "lru-cache": "^10.0.1",
-    "socks-proxy-agent": "^8.0.1"
+    "agent-base": "^7.1.1",
+    "http-proxy-agent": "^7.0.2",
+    "https-proxy-agent": "^7.0.4",
+    "lru-cache": "^10.2.0",
+    "socks-proxy-agent": "^8.0.3"
   },
   "devDependencies": {
-    "@npmcli/eslint-config": "^4.0.0",
+    "@npmcli/eslint-config": "^4.0.2",
     "@npmcli/template-oss": "4.21.3",
-    "minipass-fetch": "^3.0.3",
-    "nock": "^13.2.7",
-    "semver": "^7.5.4",
+    "minipass-fetch": "^3.0.4",
+    "nock": "^13.5.4",
+    "semver": "^7.6.0",
     "simple-socks": "^3.1.0",
     "tap": "^16.3.0"
   },

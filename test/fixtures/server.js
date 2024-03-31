@@ -72,6 +72,10 @@ class Server extends EventEmitter {
     return `${this.#protocol}//${this.#auth}localhost:${this.#port}`
   }
 
+  get hostAddress () {
+    return `${this.#protocol}//${this.#auth}${this.#host}:${this.#port}`
+  }
+
   async start () {
     this.server.listen(0, this.#host)
     await once(this.server, 'listening')
