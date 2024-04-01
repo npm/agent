@@ -3,16 +3,13 @@
 const t = require('tap')
 const timers = require('timers/promises')
 const semver = require('semver')
+const dns = require('dns')
 const { createSetup, mockConnect } = require('./fixtures/setup.js')
 
 const isWindows = process.platform === 'win32'
 
 const agentTest = (t, opts) => {
   const { setup, hasProxy, isSocks } = createSetup(opts)
-  // node changed dns resolution to prefer ipv6 over ipv4 in >=18 since we dont
-  // want to set defaults for that in the agent we need to test based on that
-  // which will affect whether some requests fail
-
   t.test('single request basic', async (t) => {
     const { client } = await setup(t)
 
@@ -42,20 +39,23 @@ const agentTest = (t, opts) => {
   })
 
   t.test('single request ipv6 only', async (t) => {
+    // Node 16 used ipv4first as the default dns resolution algorithim.
+    // This breaks socks proxying for this test because the DNS will return
+    // 127.0.0.1 for localhost which will refuse an IPv6 connection.
+    if (isSocks && process.version.startsWith('v16.')) {
+      dns.setDefaultResultOrder('verbatim')
+      t.teardown(() => dns.setDefaultResultOrder('ipv4first'))
+    }
+
     const { client, createAgent, createClient } = await setup(t, {
       server: { family: 6 },
       proxy: { family: 6 },
       agent: { family: 6 },
     })
 
-    // TODO(lukekarrys): Node 16 and socks-proxy-agent dont work to explicitly set ipv6
-    if (isSocks && process.version.startsWith('v16.')) {
-      await t.rejects(client.get('/'), { code: 'FETCH_ERROR' })
-    } else {
-      const res = await client.get('/')
-      t.equal(res.status, 200)
-      t.equal(res.result, 'OK!')
-    }
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
 
     const mismatchAgent = createAgent({ family: 4 })
     const mismatchClient = createClient(mismatchAgent)
