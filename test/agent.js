@@ -1,27 +1,15 @@
 'use strict'
 
 const t = require('tap')
-const net = require('net')
 const timers = require('timers/promises')
 const semver = require('semver')
+const dns = require('dns')
 const { createSetup, mockConnect } = require('./fixtures/setup.js')
 
-// This is a global setter available in Node 18.18.0+ that we need to set so we
-// can get the same successes/failures for tests that rely on the default
-// autoselectfamily behavior
-if (net.setDefaultAutoSelectFamily) {
-  net.setDefaultAutoSelectFamily(false)
-}
-
-const ipv4Default = process.version.startsWith('v16.')
 const isWindows = process.platform === 'win32'
 
 const agentTest = (t, opts) => {
   const { setup, hasProxy, isSocks } = createSetup(opts)
-  // node changed dns resolution to prefer ipv6 over ipv4 in >=18 since we dont
-  // want to set defaults for that in the agent we need to test based on that
-  // which will affect whether some requests fail
-
   t.test('single request basic', async (t) => {
     const { client } = await setup(t)
 
@@ -39,63 +27,41 @@ const agentTest = (t, opts) => {
       agent: { family: 4 },
     })
 
-    // socks-proxy-agent doesnt allow setting ip family on socket
-    // will be possible when https://github.com/TooTallNate/proxy-agents/pull/241 lands
-    if (isSocks) {
-      if (ipv4Default) {
-        t.ok(await client.get('/'))
-      } else {
-        await t.rejects(client.get('/'))
-      }
-    } else {
-      const res = await client.get('/')
-      t.equal(res.status, 200)
-      t.equal(res.result, 'OK!')
-    }
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
 
     const mismatchAgent = createAgent({ family: 6 })
     const mismatchClient = createClient(mismatchAgent)
 
-    if (isSocks) {
-      if (ipv4Default) {
-        t.ok(await mismatchClient.get('/'))
-      } else {
-        await t.rejects(mismatchClient.get('/'), { code: 'FETCH_ERROR' })
-      }
-    } else {
-      await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
-    }
+    // TODO(lukekarrys): this should be ECONNREFUSED for socks also
+    await t.rejects(mismatchClient.get('/'), { code: isSocks ? 'FETCH_ERROR' : 'ECONNREFUSED' })
   })
 
   t.test('single request ipv6 only', async (t) => {
+    // Node 16 used ipv4first as the default dns resolution algorithim.
+    // This breaks socks proxying for this test because the DNS will return
+    // 127.0.0.1 for localhost which will refuse an IPv6 connection.
+    if (isSocks && process.version.startsWith('v16.')) {
+      dns.setDefaultResultOrder('verbatim')
+      t.teardown(() => dns.setDefaultResultOrder('ipv4first'))
+    }
+
     const { client, createAgent, createClient } = await setup(t, {
       server: { family: 6 },
       proxy: { family: 6 },
       agent: { family: 6 },
     })
 
-    if (ipv4Default && isSocks) {
-      await t.rejects(client.get('/'))
-    } else {
-      const res = await client.get('/')
-      t.equal(res.status, 200)
-      t.equal(res.result, 'OK!')
-    }
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
 
     const mismatchAgent = createAgent({ family: 4 })
     const mismatchClient = createClient(mismatchAgent)
 
-    // socks-proxy-agent doesnt allow setting ip family on socket
-    // will be possible when https://github.com/TooTallNate/proxy-agents/pull/241 lands
-    if (isSocks) {
-      if (ipv4Default) {
-        await t.rejects(mismatchClient.get('/'), { code: 'FETCH_ERROR' })
-      } else {
-        t.ok(await mismatchClient.get('/'))
-      }
-    } else {
-      await t.rejects(mismatchClient.get('/'), { code: 'ECONNREFUSED' })
-    }
+    // TODO(lukekarrys): this should be ECONNREFUSED for socks also
+    await t.rejects(mismatchClient.get('/'), { code: isSocks ? 'FETCH_ERROR' : 'ECONNREFUSED' })
   })
 
   t.test('can disable keep-alive', async (t) => {

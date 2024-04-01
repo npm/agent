@@ -32,7 +32,7 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
       const serverType = tlsType(serverTls)
       const server = new Server[serverType](t, { ...baseOpts.server, ...opts.server })
       await server.start()
-      t.comment(`Server: ${server.address}`)
+      t.comment(`Server: ${server.address} ${server.hostAddress}`)
 
       const agentOpts = { ...baseOpts.agent, ...opts.agent, rejectUnauthorized: false }
 
@@ -45,7 +45,7 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
           simpleSocks: await import('simple-socks').then(r => r.default),
         })
         await proxy.start()
-        t.comment(`Proxy: ${proxy.address}`)
+        t.comment(`Proxy: ${proxy.address} ${proxy.hostAddress}`)
       }
 
       const createAgent = (o) => new Agent({
@@ -55,7 +55,8 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
       })
       const agent = createAgent()
 
-      const createClient = (a = agent, address = server.address) => new Client(a, address, t)
+      const createClient = (a = agent, addr = isSocks ? server.hostAddress : server.address) =>
+        new Client(a, addr, t)
       const client = createClient()
 
       t.teardown(async () => {

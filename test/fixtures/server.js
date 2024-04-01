@@ -72,6 +72,12 @@ class Server extends EventEmitter {
     return `${this.#protocol}//${this.#auth}localhost:${this.#port}`
   }
 
+  get hostAddress () {
+    const ipv6 = net.isIPv6(this.#host)
+    const host = ipv6 ? 'localhost' : this.#host
+    return `${this.#protocol}//${this.#auth}${host}:${this.#port}`
+  }
+
   async start () {
     this.server.listen(0, this.#host)
     await once(this.server, 'listening')
