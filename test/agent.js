@@ -2,11 +2,8 @@
 
 const t = require('tap')
 const timers = require('timers/promises')
-const semver = require('semver')
 const dns = require('dns')
 const { createSetup, mockConnect } = require('./fixtures/setup.js')
-
-const isWindows = process.platform === 'win32'
 
 const agentTest = (t, opts) => {
   const { setup, hasProxy, isSocks } = createSetup(opts)
@@ -174,12 +171,7 @@ const agentTest = (t, opts) => {
       })
 
       if (isSocks) {
-        // weird bug that fails with a message about node internals starting with this specific
-        // node version in windows. skipping this test for now to ship these agent updates.
-        const skipThis = semver.gte(process.version, '18.17.1') && isWindows && !opts.serverTls
-        if (!skipThis) {
-          await t.rejects(client.get('/'))
-        }
+        await t.rejects(client.get('/'))
       } else {
         const res = await client.get('/')
         t.equal(res.status, 500)
