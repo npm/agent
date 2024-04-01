@@ -5,6 +5,7 @@ const timers = require('timers/promises')
 const semver = require('semver')
 const { createSetup, mockConnect } = require('./fixtures/setup.js')
 
+const ipv4Default = process.version.startsWith('v16.')
 const isWindows = process.platform === 'win32'
 
 const agentTest = (t, opts) => {
@@ -47,9 +48,14 @@ const agentTest = (t, opts) => {
       agent: { family: 6 },
     })
 
-    const res = await client.get('/')
-    t.equal(res.status, 200)
-    t.equal(res.result, 'OK!')
+    // TODO(lukekarrys): Node 16 and socks-proxy-agent dont work to explicitly set ipv6
+    if (isSocks && ipv4Default) {
+      await t.rejects(client.get('/'), { code: 'FETCH_ERROR' })
+    } else {
+      const res = await client.get('/')
+      t.equal(res.status, 200)
+      t.equal(res.result, 'OK!')
+    }
 
     const mismatchAgent = createAgent({ family: 4 })
     const mismatchClient = createClient(mismatchAgent)
