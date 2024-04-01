@@ -55,7 +55,8 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
       })
       const agent = createAgent()
 
-      const createClient = (a = agent, address = server.address) => new Client(a, address, t)
+      const createClient = (a = agent, addr = isSocks ? server.hostAddress : server.address) =>
+        new Client(a, addr, t)
       const client = createClient()
 
       t.teardown(async () => {
