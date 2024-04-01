@@ -5,7 +5,6 @@ const timers = require('timers/promises')
 const semver = require('semver')
 const { createSetup, mockConnect } = require('./fixtures/setup.js')
 
-const ipv4Default = process.version.startsWith('v16.')
 const isWindows = process.platform === 'win32'
 
 const agentTest = (t, opts) => {
@@ -38,6 +37,7 @@ const agentTest = (t, opts) => {
     const mismatchAgent = createAgent({ family: 6 })
     const mismatchClient = createClient(mismatchAgent)
 
+    // TODO(lukekarrys): this should be ECONNREFUSED for socks also
     await t.rejects(mismatchClient.get('/'), { code: isSocks ? 'FETCH_ERROR' : 'ECONNREFUSED' })
   })
 
@@ -49,7 +49,7 @@ const agentTest = (t, opts) => {
     })
 
     // TODO(lukekarrys): Node 16 and socks-proxy-agent dont work to explicitly set ipv6
-    if (isSocks && ipv4Default) {
+    if (isSocks && process.version.startsWith('v16.')) {
       await t.rejects(client.get('/'), { code: 'FETCH_ERROR' })
     } else {
       const res = await client.get('/')
@@ -60,6 +60,7 @@ const agentTest = (t, opts) => {
     const mismatchAgent = createAgent({ family: 4 })
     const mismatchClient = createClient(mismatchAgent)
 
+    // TODO(lukekarrys): this should be ECONNREFUSED for socks also
     await t.rejects(mismatchClient.get('/'), { code: isSocks ? 'FETCH_ERROR' : 'ECONNREFUSED' })
   })
 
