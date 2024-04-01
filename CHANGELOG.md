@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.2](https://github.com/npm/agent/compare/v2.2.1...v2.2.2) (2024-04-01)
+
+### Bug Fixes
+
+* [`30f7443`](https://github.com/npm/agent/commit/30f7443ddf74879a2066ac3fb91d1238a4b1e102) [#94](https://github.com/npm/agent/pull/94) set socks proxy socket family (#94) (@lukekarrys)
+
 ## [2.2.1](https://github.com/npm/agent/compare/v2.2.0...v2.2.1) (2024-02-01)
 
 ### Bug Fixes
