@@ -9,6 +9,7 @@ const http = require('http')
 const https = require('https')
 const timers = require('timers/promises')
 const fetch = require('minipass-fetch')
+const socks = require('socksv5')
 
 const parseAuthHeader = (header) => {
   const reqAuth = header.slice('Basic '.length)
@@ -270,29 +271,16 @@ class HttpsProxy extends HttpProxy {
 }
 
 class SocksProxy extends Server {
-  #failConnect
-
-  constructor (t, { protocol = 'socks:', simpleSocks, failConnect, ...options } = {}) {
+  constructor (t, { protocol = 'socks:', failConnect, ...options } = {}) {
     super(t, {
       ...options,
       protocol,
-      connectionEvent: 'handshake',
-      createServer: ({ auth }) => simpleSocks.createServer({
-        authenticate: (username, password, _, callback) => {
-          const args = auth ? [auth(username, password) ? null : new Error('Invalid auth')] : []
-          return setImmediate(callback, ...args)
-        },
-      }),
+      createServer: ({ auth }) => socks.createServer({
+        auths: [auth
+          ? socks.auth.UserPassword((user, password, cb) => cb(auth(user, password)))
+          : socks.auth.None()],
+      }, (_, accept, deny) => failConnect ? deny() : accept())._srv,
     })
-
-    this.#failConnect = failConnect
-    this.server.on('proxyConnect', this.#proxyConnect)
-  }
-
-  #proxyConnect = (_, socket) => {
-    if (this.#failConnect) {
-      socket.destroy(new Error('failConnect!'))
-    }
   }
 }
 

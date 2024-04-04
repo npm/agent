@@ -42,7 +42,6 @@ const createSetup = ({ serverTls, proxyTls, ...baseOpts }) => {
           ...baseOpts.proxy,
           ...opts.proxy,
           agent: new Agent(omit(agentOpts, 'timeouts')),
-          simpleSocks: await import('simple-socks').then(r => r.default),
         })
         await proxy.start()
         t.comment(`Proxy: ${proxy.address} ${proxy.hostAddress}`)
