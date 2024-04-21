@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.3](https://github.com/npm/agent/compare/v2.2.2...v2.2.3) (2024-04-21)
+
+### Chores
+
+* [`f797fa1`](https://github.com/npm/agent/commit/f797fa12c19915486b0aa662bfdbcf7824f8054a) [#95](https://github.com/npm/agent/pull/95) re-implement skipped windows test (#95) (@lukekarrys)
+* [`d3187c4`](https://github.com/npm/agent/commit/d3187c463f03792de57e08bc9f53302eba362ef1) [#98](https://github.com/npm/agent/pull/98) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`d4b9cb8`](https://github.com/npm/agent/commit/d4b9cb8edc4a6e64fe2211d1004565975c50bd46) [#98](https://github.com/npm/agent/pull/98) bump @npmcli/template-oss from 4.21.3 to 4.21.4 (@dependabot[bot])
+
 ## [2.2.2](https://github.com/npm/agent/compare/v2.2.1...v2.2.2) (2024-04-01)
 
 ### Bug Fixes
