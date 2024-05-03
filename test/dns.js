@@ -97,7 +97,7 @@ t.test('does not cache errors', async (t) => {
   const { lookup } = getDnsOptions({ ...DEFAULT_OPTS, lookup: fakeLookup })
 
   return new Promise((resolve) => {
-    lookup('localhost', (err, address, family) => {
+    lookup('localhost', (err) => {
       t.hasStrict(err, { message: 'failed' }, 'got the error')
       t.equal(lookupCalled, 1, 'lookup was called once')
       resolve()
