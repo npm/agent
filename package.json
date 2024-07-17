@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@npmcli/eslint-config": "^4.0.0",
-    "@npmcli/template-oss": "4.22.0",
+    "@npmcli/template-oss": "4.23.1",
     "minipass-fetch": "^3.0.3",
     "nock": "^13.2.7",
     "socksv5": "^0.0.6",
