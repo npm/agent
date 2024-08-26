@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.0.0](https://github.com/npm/agent/compare/v2.2.2...v3.0.0) (2024-08-26)
+
+### ⚠️ BREAKING CHANGES
+
+* `@npmcli/agent` now supports node `^18.17.0 || >=20.5.0`
+
+### Bug Fixes
+
+* [`5dbeb55`](https://github.com/npm/agent/commit/5dbeb555bd38ce52d8b526b0860d103237580ce4) [#113](https://github.com/npm/agent/pull/113) align to npm 10 node engine range (@hashtagchris)
+
+### Chores
+
+* [`bfdccc1`](https://github.com/npm/agent/commit/bfdccc1d8f93c05272057477a782e23f204f76a3) [#114](https://github.com/npm/agent/pull/114) bump @npmcli/eslint-config from 4.0.5 to 5.0.0 (@dependabot[bot])
+* [`e3fd27f`](https://github.com/npm/agent/commit/e3fd27fa3ae84ebead169ee45f877bdd5a5ce657) [#113](https://github.com/npm/agent/pull/113) run template-oss-apply (@hashtagchris)
+* [`21c1987`](https://github.com/npm/agent/commit/21c19874834fb00c7ab37268b385fb84deb2df04) [#99](https://github.com/npm/agent/pull/99) linting: no-unused-vars (@lukekarrys)
+* [`488db1d`](https://github.com/npm/agent/commit/488db1df0025ba07e4de42e62638e1c49759687f) [#99](https://github.com/npm/agent/pull/99) bump @npmcli/template-oss to 4.22.0 (@lukekarrys)
+* [`f797fa1`](https://github.com/npm/agent/commit/f797fa12c19915486b0aa662bfdbcf7824f8054a) [#95](https://github.com/npm/agent/pull/95) re-implement skipped windows test (#95) (@lukekarrys)
+* [`603173b`](https://github.com/npm/agent/commit/603173ba1582ff633882c27c5dbe8a2dc41e3a42) [#111](https://github.com/npm/agent/pull/111) postinstall for dependabot template-oss PR (@hashtagchris)
+* [`0c7400c`](https://github.com/npm/agent/commit/0c7400c1c8d0f9976bbd12b8348a94184a0fa5f6) [#111](https://github.com/npm/agent/pull/111) bump @npmcli/template-oss from 4.22.0 to 4.23.1 (@dependabot[bot])
+
 ## [2.2.2](https://github.com/npm/agent/compare/v2.2.1...v2.2.2) (2024-04-01)
 
 ### Bug Fixes
