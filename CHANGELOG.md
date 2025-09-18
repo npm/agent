@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.0.0](https://github.com/npm/agent/compare/v3.0.0...v4.0.0) (2025-09-18)
+### ⚠️ BREAKING CHANGES
+* `@npmcli/agent` now supports node `^20.17.0 || >=22.9.0`
+### Bug Fixes
+* [`cc633d3`](https://github.com/npm/agent/commit/cc633d3d55f585b177e59004d35383e9024faf4a) [#129](https://github.com/npm/agent/pull/129) align to npm 11 node engine range (@owlstronaut)
+### Dependencies
+* [`2eccb56`](https://github.com/npm/agent/commit/2eccb561f0fc241ed8f0c1573c53a1ce86b36e43) [#129](https://github.com/npm/agent/pull/129) `lru-cache@11.2.1`
+### Chores
+* [`44d60e7`](https://github.com/npm/agent/commit/44d60e78fbed18715c435684a4d20980d7d13786) [#124](https://github.com/npm/agent/pull/124) postinstall workflow updates (#124) (@owlstronaut)
+* [`f3d6af9`](https://github.com/npm/agent/commit/f3d6af9b9f709ada6de3ee9d995c7038da804c2a) [#122](https://github.com/npm/agent/pull/122) bump minipass-fetch from 3.0.5 to 4.0.1 (#122) (@dependabot[bot])
+* [`0ca160f`](https://github.com/npm/agent/commit/0ca160f062fc282e7e7ef88216a4503396f0a317) [#120](https://github.com/npm/agent/pull/120) bump nock from 13.5.6 to 14.0.3 (#120) (@dependabot[bot])
+* [`63eb2f9`](https://github.com/npm/agent/commit/63eb2f9752b82373909746c396750ad9f4ef345e) [#127](https://github.com/npm/agent/pull/127) bump @npmcli/template-oss from 4.24.4 to 4.25.0 (#127) (@dependabot[bot], @npm-cli-bot)
+* [`3c71f9a`](https://github.com/npm/agent/commit/3c71f9adb0cce1ec228c2de0ce420e4c86f7fe46) [#116](https://github.com/npm/agent/pull/116) postinstall for dependabot template-oss PR (@hashtagchris)
+
 ## [3.0.0](https://github.com/npm/agent/compare/v2.2.2...v3.0.0) (2024-08-26)
 
 ### ⚠️ BREAKING CHANGES
