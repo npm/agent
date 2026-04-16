@@ -9,7 +9,7 @@ const http = require('http')
 const https = require('https')
 const timers = require('timers/promises')
 const fetch = require('minipass-fetch')
-const socks = require('socksv5')
+const socks = require('./socksv5')
 
 const parseAuthHeader = (header) => {
   const reqAuth = header.slice('Basic '.length)
