@@ -1,5 +1,25 @@
 # Changelog
 
+## [5.0.0](https://github.com/npm/agent/compare/v4.0.0...v5.0.0) (2026-05-07)
+### ⚠️ BREAKING CHANGES
+* `@npmcli/agent` now supports node `^22.22.2 || ^24.15.0 || >=26.0.0`
+### Features
+* [`fa21411`](https://github.com/npm/agent/commit/fa21411091c780e389d01889b3146db082da3415) [#154](https://github.com/npm/agent/pull/154) bump to new node engine range (@owlstronaut)
+### Dependencies
+* [`6c1b9b3`](https://github.com/npm/agent/commit/6c1b9b336354c01b96aa4c64dbe4d7fdf1c04b7c) [#154](https://github.com/npm/agent/pull/154) `https-proxy-agent@9.0.0`
+* [`822ca80`](https://github.com/npm/agent/commit/822ca80a4bea0c36e2336d575e39c88d9b6be4f4) [#154](https://github.com/npm/agent/pull/154) `socks-proxy-agent@10.0.0`
+* [`7243503`](https://github.com/npm/agent/commit/72435034ce1439b1a4570447c29b4abd2b42f794) [#154](https://github.com/npm/agent/pull/154) `http-proxy-agent@9.0.0`
+* [`a928f1b`](https://github.com/npm/agent/commit/a928f1b7096de5388de8044ce0be55512b123de3) [#154](https://github.com/npm/agent/pull/154) `agent-base@9.0.0`
+### Chores
+* [`37ca679`](https://github.com/npm/agent/commit/37ca6790006378f88bd1fff2cb2719f1fcee7095) [#154](https://github.com/npm/agent/pull/154) fix tests (@owlstronaut)
+* [`1126d9c`](https://github.com/npm/agent/commit/1126d9cc4c020e34771b28dd6997b0c2e2dc8d3c) [#154](https://github.com/npm/agent/pull/154) template-oss-apply (@owlstronaut)
+* [`462a88b`](https://github.com/npm/agent/commit/462a88bba72f4a976cd0a8182d8ccc3f6f5e6442) [#154](https://github.com/npm/agent/pull/154) template-oss-apply (@owlstronaut)
+* [`80ae79a`](https://github.com/npm/agent/commit/80ae79a9c2a4e430a6f9c5be51750a00994a1253) [#154](https://github.com/npm/agent/pull/154) bumping @npmcli/template-oss from 4.30.0 to 5.0.0 (@owlstronaut)
+* [`f090723`](https://github.com/npm/agent/commit/f0907234aeb233bf98401aba64df8366dcdfb06c) [#151](https://github.com/npm/agent/pull/151) inline socksv5 code for tests (#151) (@wraithgar)
+* [`43b907b`](https://github.com/npm/agent/commit/43b907b94975884a71c6296068a185355df361d8) [#136](https://github.com/npm/agent/pull/136) bump @npmcli/eslint-config from 5.1.0 to 6.0.0 (#136) (@dependabot[bot])
+* [`c6f00b8`](https://github.com/npm/agent/commit/c6f00b85003cb8a4f45ba29a406aa2a8e8254cc9) [#135](https://github.com/npm/agent/pull/135) bump minipass-fetch from 4.0.1 to 5.0.0 (#135) (@dependabot[bot])
+* [`662d23a`](https://github.com/npm/agent/commit/662d23a53e823649f44b06d86c73c06569e93b53) [#146](https://github.com/npm/agent/pull/146) bump @npmcli/template-oss from 4.29.0 to 4.30.0 (#146) (@dependabot[bot], @npm-cli-bot)
+
 ## [4.0.0](https://github.com/npm/agent/compare/v3.0.0...v4.0.0) (2025-09-18)
 ### ⚠️ BREAKING CHANGES
 * `@npmcli/agent` now supports node `^20.17.0 || >=22.9.0`
