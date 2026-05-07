@@ -181,19 +181,27 @@ const agentTest = (t, opts) => {
 
   t.test('socket error', async t => {
     const { socket, mocks } = mockConnect()
+    const returnSocket = () => socket
 
     const { client } = await setup(t, {
       mock: {
         ...mocks,
-        'http-proxy-agent': t.mock('http-proxy-agent', mocks),
-        'https-proxy-agent': t.mock('https-proxy-agent', mocks),
-        'socks-proxy-agent': t.mock('socks-proxy-agent', {
-          socks: {
-            SocksClient: class {
-              static createConnection = () => ({ socket })
-            },
+        'http-proxy-agent': {
+          HttpProxyAgent: class {
+            connect = returnSocket
           },
-        }),
+        },
+        'https-proxy-agent': {
+          HttpsProxyAgent: class {
+            connect = returnSocket
+          },
+        },
+        'socks-proxy-agent': {
+          SocksProxyAgent: class {
+            static protocols = ['socks', 'socks4', 'socks4a', 'socks5', 'socks5h']
+            connect = returnSocket
+          },
+        },
       },
     })
 
@@ -220,13 +228,12 @@ const agentTest = (t, opts) => {
             connect = delay
           },
         },
-        'socks-proxy-agent': t.mock('socks-proxy-agent', {
-          socks: {
-            SocksClient: class {
-              static createConnection = delay
-            },
+        'socks-proxy-agent': {
+          SocksProxyAgent: class {
+            static protocols = ['socks', 'socks4', 'socks4a', 'socks5', 'socks5h']
+            connect = delay
           },
-        }),
+        },
       },
     })
 
