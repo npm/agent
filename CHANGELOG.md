@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.1](https://github.com/npm/agent/compare/v5.0.0...v5.0.1) (2026-05-26)
+### Bug Fixes
+* [`a6854f0`](https://github.com/npm/agent/commit/a6854f07aeddf69c633bdf26493aa4e3408e34a0) [#105](https://github.com/npm/agent/pull/105) don't put opts.headers into the agent itself (#105) (@shunf4)
+* [`af2890c`](https://github.com/npm/agent/commit/af2890c5529767f02746447c7fa6e596aba0158c) [#159](https://github.com/npm/agent/pull/159) dispatch pending requests when a connection fails (@manzoorwanijk)
+### Chores
+* [`8a58a04`](https://github.com/npm/agent/commit/8a58a044142aff7ed32ad03ca3dc81ae354d8525) [#162](https://github.com/npm/agent/pull/162) add backport branch (#162) (@owlstronaut)
+* [`66ad22c`](https://github.com/npm/agent/commit/66ad22c90ca16385f906bab8b1317c682613924b) [#158](https://github.com/npm/agent/pull/158) bump @npmcli/eslint-config from 6.0.1 to 7.0.0 (@dependabot[bot])
+* [`2cd0bfa`](https://github.com/npm/agent/commit/2cd0bfae2540c1ec959e20491d0f7fbeadeb09ea) [#156](https://github.com/npm/agent/pull/156) bump minipass-fetch from 5.0.2 to 6.0.0 (#156) (@dependabot[bot])
+* [`0a0c7f5`](https://github.com/npm/agent/commit/0a0c7f5cf1941680787e0eaa0d79fdbfea043eb0) [#157](https://github.com/npm/agent/pull/157) postinstall for dependabot template-oss PR (@npm-cli-bot)
+* [`8aba6ca`](https://github.com/npm/agent/commit/8aba6cad05d354551773459ea48454c3939403ce) [#157](https://github.com/npm/agent/pull/157) bump @npmcli/template-oss from 5.0.0 to 5.1.0 (@dependabot[bot])
+
 ## [5.0.0](https://github.com/npm/agent/compare/v4.0.0...v5.0.0) (2026-05-07)
 ### ⚠️ BREAKING CHANGES
 * `@npmcli/agent` now supports node `^22.22.2 || ^24.15.0 || >=26.0.0`
