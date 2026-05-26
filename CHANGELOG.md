@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.1](https://github.com/npm/agent/compare/v4.0.0...v4.0.1) (2026-05-26)
+### Bug Fixes
+* [`2fac964`](https://github.com/npm/agent/commit/2fac964bc95bb9942839f93eac585c07a43b5674) [#161](https://github.com/npm/agent/pull/161) don't put opts.headers into the agent itself (#105) (@shunf4)
+* [`968f532`](https://github.com/npm/agent/commit/968f5322eb26cab6ef22d2e3a31e44ba155f3aa5) [#161](https://github.com/npm/agent/pull/161) dispatch pending requests when a connection fails (@manzoorwanijk)
+### Chores
+* [`e983fa0`](https://github.com/npm/agent/commit/e983fa0a1fbb6cd6e572ec89d3f97c77f1284589) [#161](https://github.com/npm/agent/pull/161) create backport branch (@owlstronaut)
+* [`f090723`](https://github.com/npm/agent/commit/f0907234aeb233bf98401aba64df8366dcdfb06c) [#151](https://github.com/npm/agent/pull/151) inline socksv5 code for tests (#151) (@wraithgar)
+* [`43b907b`](https://github.com/npm/agent/commit/43b907b94975884a71c6296068a185355df361d8) [#136](https://github.com/npm/agent/pull/136) bump @npmcli/eslint-config from 5.1.0 to 6.0.0 (#136) (@dependabot[bot])
+* [`c6f00b8`](https://github.com/npm/agent/commit/c6f00b85003cb8a4f45ba29a406aa2a8e8254cc9) [#135](https://github.com/npm/agent/pull/135) bump minipass-fetch from 4.0.1 to 5.0.0 (#135) (@dependabot[bot])
+* [`662d23a`](https://github.com/npm/agent/commit/662d23a53e823649f44b06d86c73c06569e93b53) [#146](https://github.com/npm/agent/pull/146) bump @npmcli/template-oss from 4.29.0 to 4.30.0 (#146) (@dependabot[bot], @npm-cli-bot)
+
 ## [4.0.0](https://github.com/npm/agent/compare/v3.0.0...v4.0.0) (2025-09-18)
 ### ⚠️ BREAKING CHANGES
 * `@npmcli/agent` now supports node `^20.17.0 || >=22.9.0`
