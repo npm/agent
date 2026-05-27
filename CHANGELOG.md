@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.2](https://github.com/npm/agent/compare/v4.0.1...v4.0.2) (2026-05-27)
+### Bug Fixes
+* [`20e4f6f`](https://github.com/npm/agent/commit/20e4f6fbcd21c976e9dab67f71c5becc3e32f27d) [#165](https://github.com/npm/agent/pull/165) use node 24 in ci (#165) (@owlstronaut)
+
 ## [4.0.1](https://github.com/npm/agent/compare/v4.0.0...v4.0.1) (2026-05-26)
 ### Bug Fixes
 * [`2fac964`](https://github.com/npm/agent/commit/2fac964bc95bb9942839f93eac585c07a43b5674) [#161](https://github.com/npm/agent/pull/161) don't put opts.headers into the agent itself (#105) (@shunf4)

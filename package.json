@@ -1,6 +1,6 @@
 {
   "name": "@npmcli/agent",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "the http/https agent used by the npm cli",
   "main": "lib/index.js",
   "scripts": {
