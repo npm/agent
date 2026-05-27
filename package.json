@@ -31,7 +31,8 @@
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
     "version": "4.30.0",
     "publish": "true",
-    "updateNpm": false
+    "updateNpm": false,
+    "latestCiVersion": 24
   },
   "dependencies": {
     "agent-base": "^7.1.0",
