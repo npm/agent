@@ -263,6 +263,25 @@ const agentTest = (t, opts) => {
     })
   })
 
+  t.test('idle timeout destroys completed keep-alive sockets', async (t) => {
+    const idle = 100
+    const { agent, client } = await setup(t, {
+      agent: { maxSockets: 1, timeouts: { idle } },
+    })
+
+    const res = await client.get('/')
+    t.equal(res.status, 200)
+    t.equal(res.result, 'OK!')
+
+    const freeSocket = Object.values(agent.freeSockets).flat()[0]
+    t.ok(freeSocket, 'socket returned to the free socket pool')
+    t.equal(freeSocket.timeout, idle, 'free socket keeps configured idle timeout')
+
+    await timers.setTimeout(idle + 50)
+
+    t.equal(freeSocket.destroyed, true, 'free socket is destroyed after idle timeout')
+  })
+
   t.test('response timeout rejects', async (t) => {
     const { proxy, server, client } = await setup(t, {
       server: { responseDelay: 150 },
