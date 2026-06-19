@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.0.2](https://github.com/npm/agent/compare/v5.0.1...v5.0.2) (2026-06-19)
+### Bug Fixes
+* [`78e3d44`](https://github.com/npm/agent/commit/78e3d44433bc22146da63a09d967272b1f2bc6bf) [#170](https://github.com/npm/agent/pull/170) retain idle timeout for free sockets (#170) (@hexa00)
+### Chores
+* [`c9d9a64`](https://github.com/npm/agent/commit/c9d9a64112922504623e18bcbc9cb18f99f68ef2) [#167](https://github.com/npm/agent/pull/167) bump @npmcli/template-oss from 5.1.0 to 5.1.1 (#167) (@dependabot[bot], @npm-cli-bot)
+
 ## [5.0.1](https://github.com/npm/agent/compare/v5.0.0...v5.0.1) (2026-05-26)
 ### Bug Fixes
 * [`a6854f0`](https://github.com/npm/agent/commit/a6854f07aeddf69c633bdf26493aa4e3408e34a0) [#105](https://github.com/npm/agent/pull/105) don't put opts.headers into the agent itself (#105) (@shunf4)
