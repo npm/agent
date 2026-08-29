@@ -72,6 +72,30 @@ const agentTest = (t, opts) => {
     t.equal(res.result, 'OK!')
   })
 
+  t.test('does not overwrite connection header', async (t) => {
+    const { server, agent } = await setup(t)
+
+    const parsed = new URL(server.address)
+    const request = parsed.protocol === 'https:' ? require('https') : require('http')
+
+    const res = await new Promise((resolve, reject) => {
+      const req = request.get(server.address, {
+        agent,
+        rejectUnauthorized: false,
+        headers: {
+          connection: 'close',
+        },
+      }, resolve)
+
+      req.on('error', reject)
+    })
+
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers.connection, 'close')
+    res.resume()
+    await new Promise(resolve => res.on('end', resolve))
+  })
+
   t.test('can limit sockets', async (t) => {
     const { server, proxy, client } = await setup(t, {
       agent: { maxSockets: 1 },
