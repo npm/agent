@@ -1,6 +1,7 @@
 'use strict'
 
 const t = require('tap')
+const { createSetup } = require('./fixtures/setup.js')
 
 const {
   getAgent,
@@ -269,6 +270,72 @@ t.test('getAgent', (t) => {
 
   t.end()
 })
+
+for (const serverTls of [false, true]) {
+  t.test(`getAgent preserves noProxy for ${serverTls ? 'https' : 'http'} requests`, async (t) => {
+    const previousNoProxy = process.env.no_proxy
+    process.env.no_proxy = 'localhost'
+    t.teardown(() => {
+      if (previousNoProxy === undefined) {
+        delete process.env.no_proxy
+      } else {
+        process.env.no_proxy = previousNoProxy
+      }
+    })
+
+    const { getAgent: getEnvAgent, cache } = t.mock('../lib/index.js')
+    t.teardown(() => cache.clear())
+    const { setup } = createSetup({ serverTls, proxyTls: false })
+    const { server, proxy, createClient } = await setup(t)
+
+    for (const noProxy of ['example.com', ['example.com'], []]) {
+      cache.clear()
+      const agent = getEnvAgent(server.address, {
+        proxy: proxy.address,
+        noProxy,
+        rejectUnauthorized: false,
+      })
+      const connections = proxy.sockets
+      const res = await createClient(agent).get('/')
+      t.equal(res.status, 200)
+      t.equal(res.result, 'OK!')
+      t.equal(proxy.sockets, connections + 1, 'explicit noProxy overrides the environment')
+    }
+  })
+
+  t.test(`getAgent caches separate noProxy policies for ${serverTls ? 'https' : 'http'}`, async (t) => {
+    const previousNoProxy = process.env.no_proxy
+    process.env.no_proxy = 'localhost'
+    t.teardown(() => {
+      if (previousNoProxy === undefined) {
+        delete process.env.no_proxy
+      } else {
+        process.env.no_proxy = previousNoProxy
+      }
+    })
+
+    const { getAgent: getEnvAgent, cache } = t.mock('../lib/index.js')
+    t.teardown(() => cache.clear())
+    const { setup } = createSetup({ serverTls, proxyTls: false })
+    const { server, proxy, createClient } = await setup(t)
+    const options = { proxy: proxy.address, rejectUnauthorized: false }
+    const url = `${serverTls ? 'https' : 'http'}://example.org`
+    for (const [directNoProxy, proxyNoProxy] of [['localhost', 'example.com'], ['', []]]) {
+      cache.clear()
+      const directAgent = getEnvAgent(url, { ...options, noProxy: directNoProxy })
+      const proxyAgent = getEnvAgent(url, { ...options, noProxy: proxyNoProxy })
+      const connections = proxy.sockets
+
+      const direct = await createClient(directAgent, server.address).get('/')
+      t.equal(direct.result, 'OK!')
+      t.equal(proxy.sockets, connections, 'the first policy bypasses localhost')
+
+      const proxied = await createClient(proxyAgent, server.address).get('/')
+      t.equal(proxied.result, 'OK!')
+      t.equal(proxy.sockets, connections + 1, 'the second policy still proxies localhost')
+    }
+  })
+}
 
 t.test('http agent', (t) => {
   t.test('does not throw with no args', async (t) => {
